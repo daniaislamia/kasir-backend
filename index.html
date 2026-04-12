@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Kasir App</title>
+</head>
+<body>
+
+<h2>Tambah Produk</h2>
+<input id="nama" placeholder="Nama">
+<input id="harga" placeholder="Harga">
+<input id="stok" placeholder="Stok">
+<button onclick="tambahProduk()">Tambah</button>
+
+<h2>Daftar Produk</h2>
+<ul id="list"></ul>
+
+<script>
+// LOAD DATA
+async function loadData() {
+  const res = await fetch('http://localhost:3000');
+  const data = await res.json();
+
+  const list = document.getElementById('list');
+  list.innerHTML = '';
+
+  data.forEach(p => {
+    list.innerHTML += `
+      <li>
+        ${p.nama} - ${p.harga} - ${p.stok}
+        <button onclick="hapus(${p.id})">Hapus</button>
+        <button onclick="edit(${p.id}, '${p.nama}', ${p.harga}, ${p.stok})">Edit</button>
+      </li>
+    `;
+  });
+}
+
+// TAMBAH
+async function tambahProduk() {
+  const nama = document.getElementById('nama').value;
+  const harga = document.getElementById('harga').value;
+  const stok = document.getElementById('stok').value;
+
+  const res = await fetch('http://localhost:3000/produk', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ nama, harga, stok })
+  });
+
+  const data = await res.json();
+  alert(data.message);
+
+  loadData();
+}
+
+// HAPUS
+async function hapus(id) {
+  const res = await fetch(`http://localhost:3000/hapus/${id}`, {
+    method: 'DELETE'
+  });
+
+  const data = await res.json();
+  alert(data.message);
+
+  loadData();
+}
+
+// EDIT
+async function edit(id, nama, harga, stok) {
+  const newNama = prompt('Nama:', nama);
+  const newHarga = prompt('Harga:', harga);
+  const newStok = prompt('Stok:', stok);
+
+  const res = await fetch(`http://localhost:3000/produk/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      nama: newNama,
+      harga: newHarga,
+      stok: newStok
+    })
+  });
+
+  const data = await res.json();
+  alert(data.message);
+
+  loadData();
+}
+
+// LOAD AWAL
+loadData();
+</script>
+
+</body>
+</html>
