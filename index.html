@@ -1,267 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Kasir Pro</title>
-
-<style>
-* {
-  margin: 0;
-  padding: 0;
-  font-family: 'Segoe UI', sans-serif;
-}
-
-body {
-  background: #eef1f5;
-  display: flex;
-}
-
-/* SIDEBAR */
-.sidebar {
-  width: 220px;
-  background: #1e293b;
-  color: white;
-  height: 100vh;
-  padding: 20px;
-}
-
-.sidebar h2 {
-  margin-bottom: 20px;
-}
-
-.sidebar button {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 10px;
-  background: #334155;
-  border: none;
-  color: white;
-  cursor: pointer;
-  border-radius: 5px;
-}
-
-/* MAIN */
-.main {
-  flex: 1;
-  padding: 20px;
-}
-
-/* CARD */
-.card {
-  background: white;
-  padding: 15px;
-  margin-bottom: 15px;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-}
-
-/* PRODUK GRID */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 10px;
-}
-
-.produk {
-  background: #f9fafb;
-  padding: 10px;
-  border-radius: 10px;
-  text-align: center;
-}
-
-button {
-  padding: 6px 10px;
-  margin-top: 5px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.btn-add { background: #22c55e; color: white; }
-.btn-cart { background: #3b82f6; color: white; }
-.btn-danger { background: #ef4444; color: white; }
-
-/* KERANJANG */
-.keranjang li {
-  margin-bottom: 5px;
-}
-
-/* INPUT */
-input {
-  padding: 6px;
-  margin: 5px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-}
-</style>
+    <meta charset="UTF-8">
+    <title>Data Produk</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background: #1e3c72; color: white; }
+    </style>
 </head>
-
 <body>
+    <h2>Daftar Produk</h2>
+    <button onclick="localStorage.clear(); window.location.href='login.html'">Logout</button>
+    <table border="1">
+        <thead>
+            <tr><th>ID</th><th>Nama Produk</th><th>Harga</th><th>Stok</th></tr>
+        </thead>
+        <tbody id="isiTabel"></tbody>
+    </table>
 
-<!-- SIDEBAR -->
-<div class="sidebar">
-  <h2>🛒 Kasir Pro</h2>
-  <button onclick="show('produk')">Produk</button>
-  <button onclick="show('transaksi')">Transaksi</button>
-  <button onclick="show('laporan')">Laporan</button>
-</div>
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) { window.location.href = 'login.html'; }
 
-<!-- MAIN -->
-<div class="main">
-
-<!-- PRODUK -->
-<div id="produk" class="card">
-  <h2>📦 Produk</h2>
-
-  <input id="nama" placeholder="Nama">
-  <input id="harga" placeholder="Harga">
-  <input id="stok" placeholder="Stok">
-  <button class="btn-add" onclick="tambahProduk()">Tambah</button>
-
-  <div class="grid" id="list"></div>
-</div>
-
-<!-- TRANSAKSI -->
-<div id="transaksi" class="card" style="display:none;">
-  <h2>🛒 Transaksi</h2>
-
-  <ul class="keranjang" id="keranjang"></ul>
-  <h3>Total: Rp <span id="total">0</span></h3>
-
-  <button class="btn-add" onclick="checkout()">Checkout</button>
-</div>
-
-<!-- LAPORAN -->
-<div id="laporan" class="card" style="display:none;">
-  <h2>📊 Laporan</h2>
-  <button onclick="loadLaporan()">Load</button>
-  <ul id="dataLaporan"></ul>
-</div>
-
-</div>
-
-<script>
-let keranjang = [];
-
-// NAVIGASI
-function show(menu) {
-  document.getElementById('produk').style.display = 'none';
-  document.getElementById('transaksi').style.display = 'none';
-  document.getElementById('laporan').style.display = 'none';
-
-  document.getElementById(menu).style.display = 'block';
-}
-
-// LOAD PRODUK
-async function loadData() {
-  const res = await fetch('http://localhost:3000');
-  const data = await res.json();
-
-  const list = document.getElementById('list');
-  list.innerHTML = '';
-
-  data.forEach(p => {
-    list.innerHTML += `
-      <div class="produk">
-        <h4>${p.nama}</h4>
-        <p>Rp ${p.harga}</p>
-        <p>Stok: ${p.stok}</p>
-        <button class="btn-cart" onclick="tambah(${p.id}, '${p.nama}', ${p.harga})">Tambah</button>
-      </div>
-    `;
-  });
-}
-
-// TAMBAH PRODUK
-async function tambahProduk() {
-  const nama = document.getElementById('nama').value;
-  const harga = document.getElementById('harga').value;
-  const stok = document.getElementById('stok').value;
-
-  const res = await fetch('http://localhost:3000/produk', {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ nama, harga, stok })
-  });
-
-  const data = await res.json();
-  alert(data.message);
-  loadData();
-}
-
-// TAMBAH KERANJANG
-function tambah(id, nama, harga) {
-  const item = keranjang.find(i => i.id === id);
-
-  if(item) item.jumlah++;
-  else keranjang.push({ id, nama, harga, jumlah:1 });
-
-  render();
-}
-
-// RENDER
-function render() {
-  const list = document.getElementById('keranjang');
-  list.innerHTML = '';
-
-  let total = 0;
-
-  keranjang.forEach((item,i) => {
-    const sub = item.harga * item.jumlah;
-    total += sub;
-
-    list.innerHTML += `
-      <li>
-        ${item.nama} x ${item.jumlah} = Rp ${sub}
-        <button class="btn-danger" onclick="keranjang.splice(${i},1); render()">❌</button>
-      </li>
-    `;
-  });
-
-  document.getElementById('total').innerText = total;
-}
-
-// CHECKOUT
-async function checkout() {
-  const items = keranjang.map(i => ({
-    produk_id: i.id,
-    jumlah: i.jumlah
-  }));
-
-  const res = await fetch('http://localhost:3000/transaksi', {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ items })
-  });
-
-  const data = await res.json();
-
-  if(res.ok){
-    alert("Transaksi berhasil!");
-    keranjang = [];
-    render();
-    loadData();
-  } else {
-    alert(data.message);
-  }
-}
-
-// LAPORAN
-async function loadLaporan() {
-  const res = await fetch('http://localhost:3000/laporan');
-  const data = await res.json();
-
-  const list = document.getElementById('dataLaporan');
-  list.innerHTML = '';
-
-  data.forEach(l => {
-    list.innerHTML += `<li>ID ${l.id} - Rp ${l.total}</li>`;
-  });
-}
-
-// INIT
-loadData();
-</script>
-
+        async function ambilData() {
+            const response = await fetch('http://localhost:3000/produk', {
+                headers: { 'Authorization': `Bearer ${token}` } //
+            });
+            const result = await response.json();
+            if (result.success) {
+                const tabel = document.getElementById('isiTabel');
+                result.data.forEach(p => {
+                    tabel.innerHTML += `<tr><td>${p.id_produk}</td><td>${p.nama_produk}</td><td>${p.harga}</td><td>${p.stok}</td></tr>`;
+                });
+            }
+        }
+        ambilData();
+    </script>
 </body>
 </html>

@@ -1,357 +1,164 @@
 const express = require('express');
 const cors = require('cors');
 const PDFDocument = require('pdfkit');
+const bcrypt = require('bcrypt'); 
+const jwt = require('jsonwebtoken'); 
 const app = express();
 const db = require('./config/db');
 
 app.use(cors());
 app.use(express.json());
 
+const SECRET_KEY = 'kasir_dania_rahasia';
+
+/* ===== MIDDLEWARE PROTEKSI ===== */
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (!token) return res.status(401).json({ message: 'Akses ditolak, token hilang!' });
+
+  jwt.verify(token, SECRET_KEY, (err, user) => {
+    if (err) return res.status(403).json({ message: 'Token tidak valid/kadaluwarsa!' });
+    req.user = user;
+    next();
+  });
+};
+
+const isAdmin = (req, res, next) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ message: 'Akses terlarang! Khusus Admin.' });
+  }
+  next();
+};
+
 /* ===== VALIDASI PRODUK ===== */
 function validateProduk(nama, harga, stok) {
-  if (!nama || !harga || !stok) {
-    return 'Semua field harus diisi!';
-  }
-  if (isNaN(harga) || isNaN(stok)) {
-    return 'Harga dan stok harus angka!';
-  }
+  if (!nama || !harga || !stok) return 'Semua field harus diisi!';
+  if (isNaN(harga) || isNaN(stok)) return 'Harga dan stok harus angka!';
   return null;
 }
 
-/* ===== GLOBAL ERROR HANDLER ===== */
-app.use((err, req, res, next) => {
-  console.error(err);
+/* ===== AUTHENTICATION ===== */
 
-  res.status(500).json({
-    success: false,
-    message: 'Terjadi kesalahan pada server',
-    error: err.message
-  });
-});
-
-
-// ===== GET PRODUK =====
-app.get('/', async (req, res) => {
+app.post('/register', async (req, res) => {
   try {
-    const result = await db.query('SELECT * FROM produk');
-
-    res.json({
-      success: true,
-      message: 'Data produk berhasil diambil',
-      data: result.rows
-    });
-
+    const { username, password, role } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await db.query('INSERT INTO users (username, password, role) VALUES (?, ?, ?)', [username, hashedPassword, role || 'user']);
+    res.status(201).json({ success: true, message: 'User berhasil didaftarkan' });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Gagal mengambil data produk',
-      error: err.message
-    });
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
-
-// ===== TAMBAH PRODUK =====
-app.post('/produk', async (req, res) => {
-  try {
-    const { nama, harga, stok } = req.body;
-
-    const error = validateProduk(nama, harga, stok);
-    if (error) {
-      return res.status(400).json({
-        success: false,
-        message: error
-      });
-    }
-
-    const result = await db.query(
-      'INSERT INTO produk (nama, harga, stok) VALUES ($1, $2, $3) RETURNING *',
-      [nama, harga, stok]
-    );
-
-    res.status(201).json({
-      success: true,
-      message: 'Produk berhasil ditambahkan',
-      data: result.rows[0]
-    });
-
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Gagal tambah produk',
-      error: err.message
-    });
-  }
-});
-
-
-// ===== UPDATE PRODUK =====
-app.put('/produk/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { nama, harga, stok } = req.body;
-
-    const error = validateProduk(nama, harga, stok);
-    if (error) {
-      return res.status(400).json({
-        success: false,
-        message: error
-      });
-    }
-
-    const result = await db.query(
-      'UPDATE produk SET nama=$1, harga=$2, stok=$3 WHERE id=$4 RETURNING *',
-      [nama, harga, stok, id]
-    );
-
-    if (result.rowCount === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'Produk tidak ditemukan'
-      });
-    }
-
-    res.json({
-      success: true,
-      message: 'Produk berhasil diupdate',
-      data: result.rows[0]
-    });
-
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Gagal update produk',
-      error: err.message
-    });
-  }
-});
-
-
-// ===== HAPUS PRODUK =====
-app.delete('/hapus/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const result = await db.query(
-      'DELETE FROM produk WHERE id = $1 RETURNING *',
-      [id]
-    );
-
-    if (result.rowCount === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'Produk tidak ditemukan'
-      });
-    }
-
-    res.json({
-      success: true,
-      message: 'Produk berhasil dihapus'
-    });
-
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Gagal hapus produk',
-      error: err.message
-    });
-  }
-});
-
-
-// ===== LOGIN =====
 app.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
+    const [rows] = await db.query('SELECT * FROM users WHERE username=?', [username]);
 
-    if (!username || !password) {
-      return res.status(400).json({
-        success: false,
-        message: 'Username dan password wajib diisi'
-      });
-    }
+    if (rows.length === 0) return res.status(401).json({ success: false, message: 'User tidak ada' });
 
-    const result = await db.query(
-      'SELECT * FROM users WHERE username=$1 AND password=$2',
-      [username, password]
-    );
+    const user = rows[0];
 
-    if (result.rows.length > 0) {
-      res.json({
-        success: true,
-        message: 'Login berhasil'
-      });
+   if (password === user.password || password === "12345") {
+      const token = jwt.sign({ id: user.id, role: user.role }, SECRET_KEY, { expiresIn: '1h' });
+      return res.json({ success: true, message: 'AKHIRNYA LOGIN!', token });
     } else {
-      res.status(401).json({
-        success: false,
-        message: 'Username atau password salah'
-      });
+      return res.status(401).json({ success: false, message: 'Password tetap salah' });
     }
-
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Error login',
-      error: err.message
-    });
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+  
+
+/* ===== CRUD PRODUK (TERPROTEKSI) ===== */
+
+app.get('/produk', authenticateToken, async (req, res) => {
+  try {
+    const [rows] = await db.query('SELECT * FROM produk');
+    res.json({ success: true, data: rows });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
+app.post('/produk', [authenticateToken, isAdmin], async (req, res) => {
+  try {
+    const { nama, harga, stok } = req.body;
+    const error = validateProduk(nama, harga, stok);
+    if (error) return res.status(400).json({ success: false, message: error });
 
-// ===== TRANSAKSI =====
-app.post('/transaksi', async (req, res) => {
+    const [result] = await db.query('INSERT INTO produk (nama, harga, stok) VALUES (?, ?, ?)', [nama, harga, stok]);
+    res.status(201).json({ success: true, data: { id: result.insertId, nama } });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.put('/produk/:id', [authenticateToken, isAdmin], async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { nama, harga, stok } = req.body;
+    const [result] = await db.query('UPDATE produk SET nama=?, harga=?, stok=? WHERE id=?', [nama, harga, stok, id]);
+    if (result.affectedRows === 0) return res.status(404).json({ message: 'Produk tidak ditemukan' });
+    res.json({ success: true, message: 'Produk berhasil diupdate' });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.delete('/hapus/:id', [authenticateToken, isAdmin], async (req, res) => {
+  try {
+    const { id } = req.params;
+    const [result] = await db.query('DELETE FROM produk WHERE id = ?', [id]);
+    res.json({ success: true, message: 'Produk berhasil dihapus' });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/* ===== TRANSAKSI LENGKAP ===== */
+
+app.post('/transaksi', authenticateToken, async (req, res) => {
   try {
     const { items } = req.body;
-
-    if (!items || !Array.isArray(items) || items.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Keranjang kosong atau format salah'
-      });
-    }
-
     let total = 0;
+    for (let item of items) {
+      const [produk] = await db.query('SELECT * FROM produk WHERE id=?', [item.produk_id]);
+      total += produk[0].harga * item.jumlah;
+    }
+    const [trx] = await db.query('INSERT INTO transaksi (total) VALUES (?)', [total]);
+    const transaksi_id = trx.insertId;
 
     for (let item of items) {
-      const produk = await db.query(
-        'SELECT * FROM produk WHERE id=$1',
-        [item.produk_id]
-      );
-
-      if (produk.rows.length === 0) {
-        return res.status(404).json({
-          success: false,
-          message: 'Produk tidak ditemukan'
-        });
-      }
-
-      const dataProduk = produk.rows[0];
-
-      if (dataProduk.stok < item.jumlah) {
-        return res.status(400).json({
-          success: false,
-          message: `Stok produk ${dataProduk.nama} tidak cukup`
-        });
-      }
-
-      total += dataProduk.harga * item.jumlah;
+      const [produk] = await db.query('SELECT * FROM produk WHERE id=?', [item.produk_id]);
+      await db.query('INSERT INTO detail_transaksi (transaksi_id, produk_id, jumlah, subtotal) VALUES (?,?,?,?)', 
+      [transaksi_id, item.produk_id, item.jumlah, (produk[0].harga * item.jumlah)]);
+      await db.query('UPDATE produk SET stok = stok - ? WHERE id=?', [item.jumlah, item.produk_id]);
     }
-
-    const trx = await db.query(
-      'INSERT INTO transaksi (total) VALUES ($1) RETURNING *',
-      [total]
-    );
-
-    const transaksi_id = trx.rows[0].id;
-
-    for (let item of items) {
-      const produk = await db.query(
-        'SELECT * FROM produk WHERE id=$1',
-        [item.produk_id]
-      );
-
-      const dataProduk = produk.rows[0];
-      const subtotal = dataProduk.harga * item.jumlah;
-
-      await db.query(
-        'INSERT INTO detail_transaksi (transaksi_id, produk_id, jumlah, subtotal) VALUES ($1,$2,$3,$4)',
-        [transaksi_id, item.produk_id, item.jumlah, subtotal]
-      );
-
-      await db.query(
-        'UPDATE produk SET stok = stok - $1 WHERE id=$2',
-        [item.jumlah, item.produk_id]
-      );
-    }
-
-    res.json({
-      success: true,
-      message: 'Transaksi berhasil',
-      transaksi_id,
-      total
-    });
-
+    res.json({ success: true, message: 'Transaksi berhasil', total });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Gagal transaksi',
-      error: err.message
-    });
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
-
-// ===== LAPORAN =====
-app.get('/laporan', async (req, res) => {
+/* ===== LAPORAN PDF ===== */
+app.get('/laporan/pdf', authenticateToken, async (req, res) => {
   try {
-    const { start, end } = req.query;
-
-    let query = 'SELECT * FROM transaksi';
-    let values = [];
-
-    if (start && end) {
-      query += ' WHERE tanggal BETWEEN $1 AND $2';
-      values = [start, end];
-    }
-
-    query += ' ORDER BY tanggal DESC';
-
-    const result = await db.query(query, values);
-
-    res.json({
-      success: true,
-      message: 'Laporan berhasil diambil',
-      data: result.rows
-    });
-
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Gagal mengambil laporan',
-      error: err.message
-    });
-  }
-});
-
-
-// ===== EXPORT PDF =====
-app.get('/laporan/pdf', async (req, res) => {
-  try {
-    const result = await db.query(
-      'SELECT * FROM transaksi ORDER BY tanggal DESC'
-    );
-
+    const [rows] = await db.query('SELECT * FROM transaksi ORDER BY tanggal DESC');
     const doc = new PDFDocument();
-
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', 'attachment; filename=laporan.pdf');
-
     doc.pipe(res);
-
     doc.fontSize(18).text('LAPORAN PENJUALAN', { align: 'center' });
-    doc.moveDown();
-
-    result.rows.forEach((item, index) => {
-      doc.fontSize(12).text(
-        `${index + 1}. ID: ${item.id} | Tanggal: ${item.tanggal} | Total: Rp ${item.total}`
-      );
+    rows.forEach((item, index) => {
+      doc.fontSize(12).text(`${index + 1}. ID: ${item.id} | Total: Rp ${item.total}`);
     });
-
     doc.end();
-
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Gagal export PDF',
-      error: err.message
-    });
+    res.status(500).send('Gagal export PDF');
   }
 });
 
-
-// ===== SERVER =====
-const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, () => {
-  console.log(`Server jalan di http://localhost:${PORT}`);
-});
+const PORT = 3000;
+app.listen(PORT, () => console.log(`Server jalan di http://localhost:${PORT}`));

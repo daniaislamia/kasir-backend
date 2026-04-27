@@ -1,11 +1,13 @@
-const { Pool } = require('pg');
+const mysql = require('mysql2');
 
-const pool = new Pool({
-  user: 'postgres',
+const pool = mysql.createPool({
   host: 'localhost',
+  user: 'root',      // Default XAMPP/phpMyAdmin adalah root
+  password: '',      // Default XAMPP/phpMyAdmin adalah kosong
   database: 'kasir_db',
-  password: 'dania23',
-  port: 5432,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
 });
 
-module.exports = pool;
+module.exports = pool.promise();
