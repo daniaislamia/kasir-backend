@@ -20,23 +20,49 @@
         <tbody id="isiTabel"></tbody>
     </table>
 
-    <script>
-        const token = localStorage.getItem('token');
-        if (!token) { window.location.href = 'login.html'; }
+<script>
+const token = localStorage.getItem('token');
 
-        async function ambilData() {
-            const response = await fetch('http://localhost:3000/produk', {
-                headers: { 'Authorization': `Bearer ${token}` } //
-            });
-            const result = await response.json();
-            if (result.success) {
-                const tabel = document.getElementById('isiTabel');
-                result.data.forEach(p => {
-                    tabel.innerHTML += `<tr><td>${p.id_produk}</td><td>${p.nama_produk}</td><td>${p.harga}</td><td>${p.stok}</td></tr>`;
-                });
+if (!token) {
+    window.location.href = 'login.html';
+}
+
+async function ambilData() {
+    try {
+        const response = await fetch('http://localhost:3000/api/produk', {
+            headers: {
+                'Authorization': `Bearer ${token}`
             }
+        });
+
+        const result = await response.json();
+
+        if (result.message === "Token tidak valid") {
+            localStorage.clear();
+            window.location.href = 'login.html';
         }
-        ambilData();
-    </script>
+
+        if (result) {
+            const tabel = document.getElementById('isiTabel');
+            tabel.innerHTML = '';
+
+            result.data.forEach(p => {
+                tabel.innerHTML += `
+                    <tr>
+                        <td>${p.id_produk}</td>
+                        <td>${p.nama_produk}</td>
+                        <td>${p.harga}</td>
+                        <td>${p.stok}</td>
+                    </tr>`;
+            });
+        }
+
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+ambilData();
+</script>
 </body>
 </html>

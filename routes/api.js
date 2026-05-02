@@ -1,31 +1,42 @@
 const express = require('express');
 const router = express.Router();
 
-// 1. Ambil Middleware
+// 1. Middleware
 const upload = require('../middleware/upload'); 
+const authMiddleware = require('../middleware/authMiddleware'); // 🔐 TAMBAHAN WAJIB
 
-// 2. Ambil Controller
+// 2. Controller
 const produkController = require('../controller/produkController');
 const authController = require('../controller/authController');
 
-// --- RUTE AUTH ---
+// ================= AUTH =================
 router.post('/login', authController.login);
 
-// --- RUTE PRODUK ---
+// ================= PRODUK (PROTECTED) =================
 
 // Get All: Melihat semua produk
-router.get('/produk', produkController.index); 
+router.get('/produk', authMiddleware, produkController.index); 
 
 // Create: Menambah produk baru + upload foto
-router.post('/produk', upload.single('foto'), produkController.store);
+router.post(
+    '/produk',
+    authMiddleware,
+    upload.single('foto'),
+    produkController.store
+);
 
 // Update: Mengedit produk berdasarkan ID + upload foto baru (jika ada)
-router.put('/produk/:id', upload.single('foto'), produkController.update);
+router.put(
+    '/produk/:id',
+    authMiddleware,
+    upload.single('foto'),
+    produkController.update
+);
 
 // Delete: Menghapus produk berdasarkan ID + hapus file fotonya
-router.delete('/produk/:id', produkController.destroy);
+router.delete('/produk/:id', authMiddleware, produkController.destroy);
 
-// 🔥 DEBUG UPLOAD (UNTUK TES)
+// ================= DEBUG UPLOAD =================
 router.post('/debug-upload', upload.single('gambar'), (req, res) => {
     console.log("=== DEBUG UPLOAD ===");
     console.log("BODY:", req.body);
