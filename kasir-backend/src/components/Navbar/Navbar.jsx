@@ -1,15 +1,37 @@
-import styles from "./Navbar.module.css";
-
 function Navbar() {
   return (
-    <nav className={styles.navbar}>
-      <h2 className={styles.logo}>Kasir App</h2>
+    <nav className="navbar navbar-expand-lg navbar-dark bg-success">
 
-      <ul className={styles.menu}>
-        <li>Home</li>
-        <li>Produk</li>
-        <li>Transaksi</li>
-      </ul>
+      <div className="container">
+
+        <a className="navbar-brand" href="#">
+          Kasir App
+        </a>
+
+        <ul className="navbar-nav ms-auto">
+
+          <li className="nav-item">
+            <a className="nav-link" href="#">
+              Home
+            </a>
+          </li>
+
+          <li className="nav-item">
+            <a className="nav-link" href="#">
+              Produk
+            </a>
+          </li>
+
+          <li className="nav-item">
+            <a className="nav-link" href="#">
+              Transaksi
+            </a>
+          </li>
+
+        </ul>
+
+      </div>
+
     </nav>
   );
 }

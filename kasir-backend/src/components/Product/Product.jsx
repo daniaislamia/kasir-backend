@@ -1,11 +1,20 @@
-import styles from "./Product.module.css";
-
 function Product(props) {
   return (
-    <div className={styles.card}>
-      <h2>{props.nama}</h2>
-      <p>Harga: Rp {props.harga}</p>
+
+    <div className="card mb-3">
+
+      <div className="card-body">
+
+        <h3>{props.nama}</h3>
+
+        <p>
+          Harga: Rp {props.harga}
+        </p>
+
+      </div>
+
     </div>
+
   );
 }
 

@@ -19,11 +19,17 @@ function Home() {
   }
 
   return (
-    <main>
 
-      <h1>Daftar Produk</h1>
+    <div className="container mt-4">
 
-      <button onClick={handleTambah}>
+      <h1 className="mb-3">
+        Daftar Produk
+      </h1>
+
+      <button
+        className="btn btn-success mb-3"
+        onClick={handleTambah}
+      >
         Tambah Produk
       </button>
 
@@ -35,7 +41,7 @@ function Home() {
         />
       ))}
 
-    </main>
+    </div>
   );
 }
 
