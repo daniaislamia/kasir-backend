@@ -1,21 +1,21 @@
-function Product(props) {
+function Product({ nama, harga }) {
+
   return (
 
     <div className="card mb-3">
 
       <div className="card-body">
 
-        <h3>{props.nama}</h3>
+        <h3>{nama}</h3>
 
-        <p>
-          Harga: Rp {props.harga}
-        </p>
+        <p>Harga: Rp {harga}</p>
 
       </div>
 
     </div>
 
   );
+
 }
 
 export default Product;

@@ -9,7 +9,7 @@ const upload = require('./middleware/upload');
 
 const app = express();
 
-/* ===== MIDDLEWARE DASAR ===== */
+/* ===== MIDDLEWARE DASAR ===== */ 
 app.use(cors());
 app.use(express.json()); 
 app.use(express.urlencoded({ extended: true })); 
