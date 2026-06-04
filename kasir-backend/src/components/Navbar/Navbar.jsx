@@ -1,39 +1,65 @@
+import { Link } from "react-router-dom";
+
 function Navbar() {
+
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-success">
+
+    <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
 
       <div className="container">
 
-        <a className="navbar-brand" href="#">
+        <Link
+          className="navbar-brand"
+          to="/"
+        >
           Kasir App
-        </a>
+        </Link>
 
-        <ul className="navbar-nav ms-auto">
+        <div className="navbar-nav">
 
-          <li className="nav-item">
-            <a className="nav-link" href="#">
-              Home
-            </a>
-          </li>
+          <Link
+            className="nav-link"
+            to="/"
+          >
+            Home
+          </Link>
 
-          <li className="nav-item">
-            <a className="nav-link" href="#">
-              Produk
-            </a>
-          </li>
+          <Link
+            className="nav-link"
+            to="/produk"
+          >
+            Produk
+          </Link>
 
-          <li className="nav-item">
-            <a className="nav-link" href="#">
-              Transaksi
-            </a>
-          </li>
+          <Link
+            className="nav-link"
+            to="/transaksi"
+          >
+            Transaksi
+          </Link>
 
-        </ul>
+          <Link
+            className="nav-link"
+            to="/login"
+          >
+            Login
+          </Link>
+
+          <Link
+            className="nav-link"
+            to="/register"
+          >
+            Register
+          </Link>
+
+        </div>
 
       </div>
 
     </nav>
+
   );
+
 }
 
 export default Navbar;
