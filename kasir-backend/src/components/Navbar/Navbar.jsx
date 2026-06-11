@@ -1,65 +1,65 @@
 import { Link } from "react-router-dom";
 
 function Navbar() {
+return ( <nav className="navbar navbar-expand-lg navbar-dark bg-dark shadow">
 
-  return (
 
-    <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
+  <div className="container">
 
-      <div className="container">
+    <Link
+      className="navbar-brand fw-bold"
+      to="/dashboard"
+    >
+      🛒 Kasir App
+    </Link>
 
-        <Link
-          className="navbar-brand"
-          to="/"
-        >
-          Kasir App
-        </Link>
+    <div className="navbar-nav ms-auto d-flex align-items-center gap-3">
 
-        <div className="navbar-nav">
+      <Link
+        className="nav-link fw-semibold"
+        to="/dashboard"
+      >
+        Dashboard
+      </Link>
 
-          <Link
-            className="nav-link"
-            to="/"
-          >
-            Home
-          </Link>
+      <Link
+        className="nav-link fw-semibold"
+        to="/produk"
+      >
+        Produk
+      </Link>
 
-          <Link
-            className="nav-link"
-            to="/produk"
-          >
-            Produk
-          </Link>
+      <Link
+        className="nav-link fw-semibold"
+        to="/transaksi"
+      >
+        Transaksi
+      </Link>
 
-          <Link
-            className="nav-link"
-            to="/transaksi"
-          >
-            Transaksi
-          </Link>
+      <Link
+        className="nav-link fw-semibold"
+        to="/laporan"
+      >
+        Laporan
+      </Link>
 
-          <Link
-            className="nav-link"
-            to="/login"
-          >
-            Login
-          </Link>
+      <button
+        className="btn btn-outline-light btn-sm rounded-pill px-3"
+        onClick={() => {
+          window.location.href = "/";
+        }}
+      >
+        Logout
+      </button>
 
-          <Link
-            className="nav-link"
-            to="/register"
-          >
-            Register
-          </Link>
+    </div>
 
-        </div>
+  </div>
 
-      </div>
+</nav>
 
-    </nav>
 
-  );
-
+);
 }
 
 export default Navbar;

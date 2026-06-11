@@ -1,30 +1,51 @@
 import {
-  BrowserRouter,
-  Routes,
-  Route,
+BrowserRouter,
+Routes,
+Route,
+useLocation,
 } from "react-router-dom";
 
-import Navbar from "./components/Navbar/Navbar";
-import Footer from "./components/Footer/Footer";
+import Sidebar from "./components/Sidebar/Sidebar";
 
 import Home from "./pages/Home";
 import Produk from "./pages/Produk";
 import Transaksi from "./pages/Transaksi";
+import Laporan from "./pages/Laporan";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 
-function App() {
+function Layout() {
 
-  return (
+const location = useLocation();
 
-    <BrowserRouter>
+const hideLayout =
+location.pathname === "/" ||
+location.pathname === "/login" ||
+location.pathname === "/register";
 
-      <Navbar />
+if (hideLayout) {
+return ( <Routes>
+<Route path="/" element={<Login />} />
+<Route path="/login" element={<Login />} />
+<Route path="/register" element={<Register />} /> </Routes>
+);
+}
 
+return (
+<div
+className="container-fluid"
+style={{
+backgroundColor: "#f8f9fa",
+minHeight: "100vh",
+}}
+> <div className="row">
+
+
+    <div className="col-lg-9">
       <Routes>
 
         <Route
-          path="/"
+          path="/dashboard"
           element={<Home />}
         />
 
@@ -39,23 +60,27 @@ function App() {
         />
 
         <Route
-          path="/login"
-          element={<Login />}
-        />
-
-        <Route
-          path="/register"
-          element={<Register />}
+          path="/laporan"
+          element={<Laporan />}
         />
 
       </Routes>
+    </div>
 
-      <Footer />
+    <div className="col-lg-3 p-0">
+      <Sidebar />
+    </div>
 
-    </BrowserRouter>
+  </div>
+</div>
 
-  );
 
+);
+}
+
+function App() {
+return ( <BrowserRouter> <Layout /> </BrowserRouter>
+);
 }
 
 export default App;
