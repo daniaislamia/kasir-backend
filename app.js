@@ -38,20 +38,20 @@ const authenticateToken = (req, res, next) => {
 // ✅ REGISTER (SUDAH SUPPORT FOTO)
 app.post('/register', upload.single('foto'), async (req, res) => {
     try {
-        const { username, password, role } = req.body;
+        const { username, email, password, role } = req.body;
 
-        if (!username || !password) {
+        if (!username || !password || !email) {
             return res.status(400).json({
                 success: false,
-                message: 'Username & password wajib diisi'
+                message: 'Username, email & password wajib diisi'
             });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
         const foto = req.file ? req.file.filename : null;
 
-        const sql = 'INSERT INTO users (username, password, role, foto) VALUES (?, ?, ?, ?)';
-        await db.execute(sql, [username, hashedPassword, role || 'user', foto]);
+        const sql = 'INSERT INTO users (username, email, password, role, foto) VALUES (?, ?, ?, ?, ?)';
+        await db.execute(sql, [username, email, hashedPassword, role || 'user', foto]);
 
         res.json({
             success: true,
@@ -64,7 +64,7 @@ app.post('/register', upload.single('foto'), async (req, res) => {
     }
 });
 
-// ✅ LOGIN
+// ✅ LOGIN - DIPERBARUI SESUAI PERINTAH: RESPONSE LANGSUNG BERISI DATA
 app.post('/login', async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -86,11 +86,17 @@ app.post('/login', async (req, res) => {
                 { expiresIn: '1d' }
             );
 
+            // ✅ BAGIAN INI SUDAH DIUBAH PERSIS SESUAI PERINTAHAN
             res.json({
                 success: true,
                 message: 'Login berhasil',
-                token
+                token: token,
+                username: user.username,
+                email: user.email,
+                role: user.role,
+                foto: user.foto
             });
+
         } else {
             res.status(401).json({ success: false, message: 'Password salah' });
         }
@@ -182,6 +188,66 @@ app.get('/transaksi', authenticateToken, async (req, res) => {
     }
 });
 
+/* ===== DASHBOARD STATISTIK ===== */
+app.get('/dashboard', async (req, res) => {
+    try {
+
+        const [produk] = await db.execute(
+            'SELECT COUNT(*) AS totalProduk FROM produk'
+        );
+
+        const [transaksi] = await db.execute(
+            'SELECT COUNT(*) AS totalTransaksi FROM transaksi'
+        );
+
+        const [users] = await db.execute(
+            'SELECT COUNT(*) AS totalUser FROM users'
+        );
+
+        const [pendapatan] = await db.execute(
+            'SELECT IFNULL(SUM(total),0) AS totalPendapatan FROM transaksi'
+        );
+
+        res.json({
+            success: true,
+            totalProduk: produk[0].totalProduk,
+            totalTransaksi: transaksi[0].totalTransaksi,
+            totalUser: users[0].totalUser,
+            totalPendapatan: pendapatan[0].totalPendapatan
+        });
+
+    } catch (err) {
+
+        res.status(500).json({
+            success: false,
+            error: err.message
+        });
+
+    }
+});
+
+/* ===== ENDPOINT USERS - SUDAH ADA EMAIL ===== */
+app.get('/users', async (req, res) => {
+    try {
+        const [rows] = await db.execute(
+            'SELECT id, username, email, role FROM users'
+        );
+
+        res.json({
+            success: true,
+            data: rows
+        });
+
+    } catch (err) {
+
+        res.status(500).json({
+            success: false,
+            error: err.message
+        });
+
+    }
+});
+
 /* ===== LAPORAN PDF ===== */
 app.get('/laporan', async (req, res) => {
     try {
@@ -209,6 +275,6 @@ const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`=========================================`);
     console.log(`Server jalan di http://localhost:${PORT}`);
-    console.log(`Rute API: http://localhost:${PORT}/api/produk`);
+    console.log(`Rute API: http://localhost:3000/api/produk`);
     console.log(`=========================================`);
 });

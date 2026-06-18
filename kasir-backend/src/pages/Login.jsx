@@ -8,38 +8,70 @@ function Login() {
   const navigate = useNavigate();
 
   const handleLogin = async () => {
-      if (!username || !password) {
-      alert("Email dan Password wajib diisi!");
+    if (!username || !password) {
+      alert("Username dan Password wajib diisi!");
       return;
     }
 
     try {
       const response = await axios.post(
-  "http://localhost:3000/login",
-  {
-    username,
-    password,
-  }
-);
+        "http://localhost:3000/login",
+        {
+          username,
+          password,
+        }
+      );
 
-console.log(
-  "TOKEN DARI API =",
-  response.data.token
-);
+      console.log(
+        "RESPONSE DARI API =",
+        response.data
+      );
 
-localStorage.setItem(
-  "token",
-  response.data.token
-);
+      // ✅ CEK SUKSES LOGIN
+      if (response.data.success) {
+        const res = response.data;
 
-console.log(
-  "TOKEN DI LOCALSTORAGE =",
-  localStorage.getItem("token")
-);
+        localStorage.setItem(
+          "token",
+          res.token
+        );
 
-alert("Login berhasil");
-navigate("/dashboard");
-      
+        // ✅ URUTAN SESUAI PERINTAH: username → email → role
+        localStorage.setItem(
+          "username",
+          res.username
+        );
+
+        localStorage.setItem(
+          "email",
+          res.email
+        );
+
+        localStorage.setItem(
+          "role",
+          res.role
+        );
+
+        localStorage.setItem(
+          "foto",
+          res.foto
+        );
+
+        console.log(
+          "DATA DI LOCALSTORAGE =",
+          {
+            token: localStorage.getItem("token"),
+            username: localStorage.getItem("username"),
+            email: localStorage.getItem("email"),
+            role: localStorage.getItem("role"),
+            foto: localStorage.getItem("foto")
+          }
+        );
+
+        alert("Login berhasil");
+        navigate("/dashboard");
+      }
+
     } catch (err) {
       console.log(err);
       alert(err.response?.data?.message || "Login gagal");
