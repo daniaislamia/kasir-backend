@@ -17,6 +17,10 @@ function Profile() {
           </p>
 
           <p>
+            <strong>Email :</strong> {email}
+          </p>
+
+          <p>
             <strong>Role :</strong> {role}
           </p>
 

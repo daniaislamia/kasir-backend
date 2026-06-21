@@ -1,7 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
+import { useContext } from "react";
+import { AuthContext } from "../../context/AuthContext";
 
 function Sidebar() {
-  const role = localStorage.getItem("role");
+
+  const { user, logout } = useContext(AuthContext);
+
   const location = useLocation();
 
   const menuStyle = (path) => ({
@@ -35,6 +39,31 @@ function Sidebar() {
         >
           🛒 Kasir App
         </h4>
+
+        {/* Tambahkan bagian profil pengguna di sini */}
+        <div
+          className="bg-secondary bg-opacity-25 rounded p-3 mb-4 text-center"
+        >
+          <div
+            className="rounded-circle bg-primary text-white mx-auto d-flex align-items-center justify-content-center"
+            style={{
+              width: "60px",
+              height: "60px",
+              fontSize: "24px",
+              fontWeight: "bold",
+            }}
+          >
+            {user?.username?.charAt(0).toUpperCase() || "U"}
+          </div>
+
+          <div className="mt-2 fw-bold">
+            {user?.username}
+          </div>
+
+          <small className="text-light">
+            {user?.role}
+          </small>
+        </div>
 
         <small
           className="text-muted text-uppercase"
@@ -72,7 +101,7 @@ function Sidebar() {
             📊 Laporan
           </Link>
 
-          {role === "admin" && (
+          {user?.role === "admin" && (
             <Link
               to="/users"
               style={menuStyle("/users")}
@@ -87,9 +116,7 @@ function Sidebar() {
       <button
         className="btn btn-outline-danger"
         onClick={() => {
-          localStorage.removeItem("token");
-          localStorage.removeItem("role");
-          localStorage.removeItem("username");
+          logout();
           window.location.href = "/";
         }}
       >

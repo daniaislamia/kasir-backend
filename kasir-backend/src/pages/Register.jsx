@@ -1,35 +1,50 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import axios from "axios"; // Tambahkan import axios
 
 function Register() {
-
   const [nama, setNama] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const navigate = useNavigate();
 
-  function handleRegister() {
-
+  // Ganti fungsi handleRegister sesuai kode yang kamu berikan
+  const handleRegister = async () => {
     if (!nama || !email || !password) {
       alert("Semua field wajib diisi!");
       return;
     }
 
-    alert("Registrasi berhasil!");
+    try {
+      const res = await axios.post(
+        "http://localhost:3000/register",
+        {
+          username: nama,
+          email: email,
+          password: password,
+        }
+      );
 
-    navigate("/login");
-  }
+      alert(res.data.message);
+      navigate("/login");
+
+    } catch (err) {
+      console.log(err);
+      alert(
+        err.response?.data?.message ||
+        "Registrasi gagal"
+      );
+    }
+  };
 
   return (
-
     <div
       className="d-flex justify-content-center align-items-center vh-100"
       style={{
         background: "linear-gradient(135deg, #0f172a, #1e293b)",
       }}
     >
-
       <div
         className="card border-0 shadow-lg p-5"
         style={{
@@ -38,9 +53,7 @@ function Register() {
           borderRadius: "20px",
         }}
       >
-
         <div className="text-center mb-4">
-
           <h1
             style={{
               fontSize: "42px",
@@ -65,7 +78,6 @@ function Register() {
           >
             Buat Akun Baru
           </p>
-
         </div>
 
         <input
@@ -145,13 +157,9 @@ function Register() {
             Login
           </Link>
         </p>
-
       </div>
-
     </div>
-
   );
-
 }
 
 export default Register;

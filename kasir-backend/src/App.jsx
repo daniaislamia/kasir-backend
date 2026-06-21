@@ -18,6 +18,7 @@ import Users from "./pages/Users";
 import Profile from "./pages/Profile";
 
 import AdminRoute from "./components/AdminRoute";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function Layout() {
   const location = useLocation();
@@ -56,35 +57,57 @@ function Layout() {
 
             <Route
               path="/dashboard"
-              element={<Home />}
+              element={
+                <ProtectedRoute>
+                  <Home />
+                </ProtectedRoute>
+              }
             />
 
             <Route
               path="/produk"
-              element={<Produk />}
+              element={
+                <ProtectedRoute>
+                  <Produk />
+                </ProtectedRoute>
+              }
             />
 
             <Route
               path="/transaksi"
-              element={<Transaksi />}
+              element={
+                <ProtectedRoute>
+                  <Transaksi />
+                </ProtectedRoute>
+              }
             />
 
             <Route
               path="/laporan"
-              element={<Laporan />}
+              element={
+                <ProtectedRoute>
+                  <Laporan />
+                </ProtectedRoute>
+              }
             />
 
             <Route
               path="/profile"
-              element={<Profile />}
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
             />
 
             <Route
               path="/users"
               element={
-                <AdminRoute>
-                  <Users />
-                </AdminRoute>
+                <ProtectedRoute>
+                  <AdminRoute>
+                    <Users />
+                  </AdminRoute>
+                </ProtectedRoute>
               }
             />
 

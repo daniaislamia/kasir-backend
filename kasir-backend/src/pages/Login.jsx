@@ -1,11 +1,13 @@
 import axios from "axios";
-import { useState } from "react";
+import { useState, useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 
 function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const { login } = useContext(AuthContext);
 
   const handleLogin = async () => {
     if (!username || !password) {
@@ -31,42 +33,7 @@ function Login() {
       if (response.data.success) {
         const res = response.data;
 
-        localStorage.setItem(
-          "token",
-          res.token
-        );
-
-        // ✅ URUTAN SESUAI PERINTAH: username → email → role
-        localStorage.setItem(
-          "username",
-          res.username
-        );
-
-        localStorage.setItem(
-          "email",
-          res.email
-        );
-
-        localStorage.setItem(
-          "role",
-          res.role
-        );
-
-        localStorage.setItem(
-          "foto",
-          res.foto
-        );
-
-        console.log(
-          "DATA DI LOCALSTORAGE =",
-          {
-            token: localStorage.getItem("token"),
-            username: localStorage.getItem("username"),
-            email: localStorage.getItem("email"),
-            role: localStorage.getItem("role"),
-            foto: localStorage.getItem("foto")
-          }
-        );
+        login(res);
 
         alert("Login berhasil");
         navigate("/dashboard");

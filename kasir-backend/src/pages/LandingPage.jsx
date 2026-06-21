@@ -5,7 +5,7 @@ function LandingPage() {
     <div>
       <nav className="navbar navbar-expand-lg navbar-dark bg-dark px-5">
         <div className="container-fluid">
-          <h3 className="text-white fw-bold">🛒 Kasir App</h3>
+          <h3 className="text-white fw-bold">Kasir App</h3>
 
           <ul className="navbar-nav mx-auto d-flex flex-row gap-4">
             <li className="nav-item">

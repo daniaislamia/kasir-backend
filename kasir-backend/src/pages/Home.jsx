@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 
 function Home() {
   const [dashboard, setDashboard] = useState({
@@ -10,8 +11,7 @@ function Home() {
     totalPendapatan: 0,
   });
 
-  const username = localStorage.getItem("username") || "Pengguna";
-  const userRole = localStorage.getItem("role") || "Pengguna";
+  const { user } = useContext(AuthContext);
 
   useEffect(() => {
     loadDashboard();
@@ -34,39 +34,7 @@ function Home() {
 
   return (
     <div className="container mt-4">
-      {/* TOPBAR - SESUAI CONTOH AWAL */}
-      <div className="d-flex justify-content-end mb-4">
-        <div className="d-flex align-items-center gap-3">
-          {/* Tombol Notifikasi */}
-          <button className="btn btn-light shadow-sm">🔔</button>
 
-          {/* Tombol Pengaturan */}
-          <button className="btn btn-light shadow-sm">⚙️</button>
-
-          {/* Profil User */}
-          <Link to="/profile" className="text-decoration-none">
-            <div className="d-flex align-items-center">
-              <div
-                className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
-                style={{
-                  width: "45px",
-                  height: "45px",
-                  fontWeight: "bold",
-                }}
-              >
-                {username.charAt(0).toUpperCase()}
-              </div>
-              <div className="ms-2">
-                <div className="fw-bold text-dark">{username}</div>
-                <small className="text-muted">{userRole}</small>
-              </div>
-            </div>
-          </Link>
-        </div>
-      </div>
-      {/* AKHIR TOPBAR */}
-
-      {/* WELCOME CARD - VERSI KEREN */}
       <div
         className="card border-0 shadow-sm mb-4"
         style={{ borderRadius: "15px" }}
@@ -75,7 +43,7 @@ function Home() {
           <div className="row align-items-center">
             <div className="col-md-8">
               <span className="badge bg-primary mb-3">Dashboard</span>
-              <h2 className="fw-bold">Selamat Datang, {username} 👋</h2>
+              <h2 className="fw-bold">Selamat Datang, {user?.username || "Pengguna"} 👋</h2>
               <p className="text-muted">
                 Kelola produk, transaksi, laporan penjualan dan pengguna dengan
                 lebih mudah melalui Sistem Informasi Kasir.
@@ -89,7 +57,6 @@ function Home() {
         </div>
       </div>
 
-      {/* BAGIAN STATISTIK */}
       <div className="row g-3 mb-4">
         <div className="col-md-6">
           <div className="card border-0 shadow-sm">
@@ -152,7 +119,6 @@ function Home() {
         </div>
       </div>
 
-      {/* BAGIAN AKTIVITAS SISTEM */}
       <div className="card shadow border-0 mt-4">
         <div className="card-body">
           <h4 className="mb-3">Aktivitas Sistem</h4>
@@ -165,7 +131,6 @@ function Home() {
         </div>
       </div>
 
-      {/* BAGIAN AKTIVITAS TERBARU */}
       <div className="card shadow border-0 mt-4">
         <div className="card-body">
           <h4 className="mb-3">Aktivitas Terbaru</h4>
@@ -177,6 +142,7 @@ function Home() {
           </ul>
         </div>
       </div>
+
     </div>
   );
 }
