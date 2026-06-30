@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Data Produk</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background: #1e3c72; color: white; }
+    </style>
+</head>
+<body>
+    <h2>Daftar Produk</h2>
+    <button onclick="localStorage.clear(); window.location.href='login.html'">Logout</button>
+    <table border="1">
+        <thead>
+            <tr><th>ID</th><th>Nama Produk</th><th>Harga</th><th>Stok</th></tr>
+        </thead>
+        <tbody id="isiTabel"></tbody>
+    </table>
+
+<script>
+const token = localStorage.getItem('token');
+
+if (!token) {
+    window.location.href = 'login.html';
+}
+
+async function ambilData() {
+    try {
+        const response = await fetch('http://localhost:3000/api/produk', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const result = await response.json();
+
+        if (result.message === "Token tidak valid") {
+            localStorage.clear();
+            window.location.href = 'login.html';
+        }
+
+        if (result) {
+            const tabel = document.getElementById('isiTabel');
+            tabel.innerHTML = '';
+
+            result.data.forEach(p => {
+                tabel.innerHTML += `
+                    <tr>
+                        <td>${p.id_produk}</td>
+                        <td>${p.nama_produk}</td>
+                        <td>${p.harga}</td>
+                        <td>${p.stok}</td>
+                    </tr>`;
+            });
+        }
+
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+ambilData();
+</script>
+</body>
+</html>
