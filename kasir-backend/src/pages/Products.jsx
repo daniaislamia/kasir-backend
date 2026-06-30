@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Card, Table, Button, Modal, Form, Alert, Row, Col } from 'react-bootstrap';
 import { Add, Edit, Delete } from '@mui/icons-material';
-import Sidebar from '../components/Sidebar';
+import Sidebar from '../components/Layout/Sidebar';  // ← PERBAIKI INI
 import api from '../api/axiosConfig';
 
 const Products = () => {
@@ -110,7 +110,6 @@ const Products = () => {
       
       fetchProducts();
       
-      // Refresh transaksi jika window ada
       if (window.refreshTransactions) {
         window.refreshTransactions();
       }

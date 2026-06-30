@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
 import Transactions from './pages/Transactions';
 import Notifications from './pages/Notifications';
+import Users from './pages/Users';  // ← TAMBAHKAN
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
@@ -23,6 +24,7 @@ function App() {
           <Route path="/products" element={<Products />} />
           <Route path="/transactions" element={<Transactions />} />
           <Route path="/notifications" element={<Notifications />} />
+          <Route path="/users" element={<Users />} />  {/* ← TAMBAHKAN */}
         </Routes>
       </AuthProvider>
     </BrowserRouter>

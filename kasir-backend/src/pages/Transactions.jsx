@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Table, Button, Form, Alert, Badge } from 'react-bootstrap';
 import { Add, Remove, Delete } from '@mui/icons-material';
-import Sidebar from '../components/Sidebar';
+import Sidebar from '../components/Layout/Sidebar';
 import api from '../api/axiosConfig';
 
 const Transactions = () => {
@@ -109,7 +109,6 @@ const Transactions = () => {
     setCustomerName('');
     setPaymentAmount(0);
     setChange(0);
-    // JANGAN hapus lastTransaction!
   };
 
   // ===== PAYMENT FUNCTIONS =====
@@ -149,6 +148,20 @@ const Transactions = () => {
 
       console.log('✅ Response transaksi:', response.data);
 
+      // Format tanggal dan waktu
+      const now = new Date();
+      const hari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'][now.getDay()];
+      const tanggal = now.toLocaleDateString('id-ID', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+      const waktu = now.toLocaleTimeString('id-ID', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+
       const transactionDetail = {
         id: response.data.id || 'N/A',
         customer: customerName || 'Umum',
@@ -156,7 +169,10 @@ const Transactions = () => {
         total: total,
         payment: paymentAmount,
         change: change,
-        createdAt: new Date().toLocaleString()
+        hari: hari,
+        tanggal: tanggal,
+        waktu: waktu,
+        createdAt: `${hari}, ${tanggal} ${waktu}`
       };
       
       console.log('📋 Detail transaksi:', transactionDetail);
@@ -415,7 +431,7 @@ const Transactions = () => {
             <Col md={12}>
               <Card className="shadow-sm border-0" style={{ backgroundColor: '#fff8f0' }}>
                 <Card.Header className="text-white fw-bold" style={{ backgroundColor: '#2e7d32' }}>
-                  📋 Detail Transaksi Terakhir
+                  📋 Detail Transaksi
                 </Card.Header>
                 <Card.Body>
                   <Row>
@@ -427,12 +443,16 @@ const Transactions = () => {
                             <td>#{lastTransaction.id}</td>
                           </tr>
                           <tr>
-                            <td><strong>Customer</strong></td>
+                            <td><strong>Nama Pelanggan</strong></td>
                             <td>{lastTransaction.customer}</td>
                           </tr>
                           <tr>
+                            <td><strong>Hari & Tanggal</strong></td>
+                            <td>{lastTransaction.hari}, {lastTransaction.tanggal}</td>
+                          </tr>
+                          <tr>
                             <td><strong>Waktu</strong></td>
-                            <td>{lastTransaction.createdAt}</td>
+                            <td>{lastTransaction.waktu}</td>
                           </tr>
                         </tbody>
                       </Table>
@@ -441,7 +461,7 @@ const Transactions = () => {
                       <Table borderless size="sm">
                         <tbody>
                           <tr>
-                            <td><strong>Total</strong></td>
+                            <td><strong>Total Belanja</strong></td>
                             <td>Rp {lastTransaction.total.toLocaleString()}</td>
                           </tr>
                           <tr>
@@ -459,7 +479,7 @@ const Transactions = () => {
                     </Col>
                   </Row>
                   <hr />
-                  <h6 className="mb-2">🛒 Produk yang Dibeli:</h6>
+                  <h6 className="mb-2">🛒 Barang yang Dibeli:</h6>
                   <Table striped bordered hover size="sm">
                     <thead>
                       <tr>

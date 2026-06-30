@@ -1,7 +1,8 @@
+// src/pages/Notifications.jsx
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Table, Button, Badge, Alert } from 'react-bootstrap';
 import { FaPrint, FaReceipt, FaCheckCircle } from 'react-icons/fa';
-import Sidebar from '../components/Sidebar';
+import Sidebar from '../components/Layout/Sidebar';  // ← PERBAIKI
 import api from '../api/axiosConfig';
 
 const Notifications = () => {
@@ -11,8 +12,6 @@ const Notifications = () => {
 
   useEffect(() => {
     fetchTransactions();
-    
-    // Auto refresh setiap 5 detik
     const interval = setInterval(fetchTransactions, 5000);
     return () => clearInterval(interval);
   }, []);
@@ -107,11 +106,11 @@ const Notifications = () => {
   return (
     <div className="d-flex">
       <Sidebar />
-      <div className="flex-grow-1 p-4" style={{ marginLeft: '250px', backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
+      <div className="flex-grow-1 p-4" style={{ marginLeft: '250px', backgroundColor: '#f5f0eb', minHeight: '100vh' }}>
         <Container fluid>
           <div className="d-flex justify-content-between align-items-center mb-4">
-            <h2 className="fw-bold">🔔 Notifikasi & Struk</h2>
-            <Button variant="primary" onClick={fetchTransactions}>
+            <h2 className="fw-bold" style={{ color: '#5d4037' }}>🔔 Notifikasi & Struk</h2>
+            <Button variant="primary" onClick={fetchTransactions} style={{ backgroundColor: '#6d4c41', borderColor: '#5d4037' }}>
               <FaReceipt /> Refresh
             </Button>
           </div>
@@ -122,11 +121,10 @@ const Notifications = () => {
             </Alert>
           )}
 
-          {/* Notifikasi Transaksi Terbaru */}
           <Row className="mb-4">
             <Col md={12}>
-              <Card className="shadow-sm border-0">
-                <Card.Header className="bg-success text-white">
+              <Card className="shadow-sm border-0" style={{ backgroundColor: '#fff8f0' }}>
+                <Card.Header className="text-white" style={{ backgroundColor: '#6d4c41' }}>
                   <h6 className="mb-0"><FaCheckCircle /> Transaksi Terbaru</h6>
                 </Card.Header>
                 <Card.Body>
@@ -154,6 +152,7 @@ const Notifications = () => {
                                   variant="success" 
                                   size="sm"
                                   onClick={() => handlePrint(trx)}
+                                  style={{ backgroundColor: '#2e7d32', borderColor: '#1b5e20' }}
                                 >
                                   <FaPrint /> Cetak Struk
                                 </Button>
@@ -171,21 +170,20 @@ const Notifications = () => {
             </Col>
           </Row>
 
-          {/* Notifikasi Otomatis */}
           <Row>
             <Col md={12}>
-              <Card className="shadow-sm border-0">
-                <Card.Header className="bg-info text-white">
+              <Card className="shadow-sm border-0" style={{ backgroundColor: '#fff8f0' }}>
+                <Card.Header className="text-white" style={{ backgroundColor: '#4e342e' }}>
                   <h6 className="mb-0">💡 Informasi</h6>
                 </Card.Header>
                 <Card.Body>
-                  <p className="mb-0">
+                  <p className="mb-0" style={{ color: '#5d4037' }}>
                     • Data transaksi akan <strong>otomatis refresh</strong> setiap 5 detik
                   </p>
-                  <p className="mb-0">
+                  <p className="mb-0" style={{ color: '#5d4037' }}>
                     • Klik <strong>"Cetak Struk"</strong> untuk mencetak struk pembayaran
                   </p>
-                  <p className="mb-0">
+                  <p className="mb-0" style={{ color: '#5d4037' }}>
                     • Total transaksi: <strong>{transactions.length}</strong>
                   </p>
                 </Card.Body>

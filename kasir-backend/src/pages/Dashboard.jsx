@@ -1,8 +1,9 @@
+// src/pages/Dashboard.jsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Row, Col, Card, Container } from 'react-bootstrap';
-import Sidebar from '../components/Sidebar';
+import Sidebar from '../components/Layout/Sidebar';  // ← PERBAIKI INI
 import StatsCard from '../components/StatsCard';
 import { Bar, Line } from 'react-chartjs-2';
 import api from '../api/axiosConfig';
@@ -88,7 +89,6 @@ const Dashboard = () => {
         totalPromos: 0
       });
 
-      // Ambil transaksi terbaru
       const transaksiRes = await api.get('/transaksi');
       console.log('Transaksi response:', transaksiRes.data);
       
@@ -193,7 +193,6 @@ const Dashboard = () => {
             </Col>
           </Row>
 
-          {/* Customer Terbaru */}
           <Row className="mb-4">
             <Col md={12}>
               <Card className="shadow-sm border-0 p-3">
@@ -228,7 +227,6 @@ const Dashboard = () => {
             </Col>
           </Row>
 
-          {/* Recent Transactions */}
           <Row className="mt-4">
             <Col md={12}>
               <Card className="shadow-sm border-0 p-3">

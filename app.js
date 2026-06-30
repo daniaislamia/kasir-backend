@@ -91,15 +91,23 @@ app.post('/login', async (req, res) => {
     try {
         const { username, password } = req.body;
 
+        console.log('========================================');
+        console.log('📝 Login attempt:', { username, password });
+
         const sql = 'SELECT * FROM users WHERE username = ?';
         const [results] = await db.execute(sql, [username]);
 
         if (results.length === 0) {
+            console.log('❌ User tidak ditemukan');
             return res.status(401).json({ success: false, message: 'User tidak ada' });
         }
 
         const user = results[0];
+        console.log('🔑 Hash dari DB:', user.password);
+        console.log('🔑 Password input:', password);
+
         const match = await bcrypt.compare(password, user.password);
+        console.log('🔑 Password match:', match);
 
         if (match) {
             const token = jwt.sign(
@@ -117,8 +125,8 @@ app.post('/login', async (req, res) => {
                 role: user.role,
                 foto: user.foto
             });
-
         } else {
+            console.log('❌ Password salah');
             res.status(401).json({ success: false, message: 'Password salah' });
         }
 
@@ -319,10 +327,12 @@ app.get('/dashboard', async (req, res) => {
     }
 });
 
-/* ===== ENDPOINT USERS ===== */
+/* ===== ENDPOINT USERS - CRUD ===== */
+
+// ✅ GET USERS
 app.get('/users', async (req, res) => {
     try {
-        const [rows] = await db.execute('SELECT id, username, email, role FROM users');
+        const [rows] = await db.execute('SELECT id, username, email, role, last_login FROM users ORDER BY username ASC');
 
         res.json({
             success: true,
@@ -338,6 +348,80 @@ app.get('/users', async (req, res) => {
     }
 });
 
+// ✅ UPDATE USER
+app.put('/users/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { username, email, password, role } = req.body;
+
+        console.log('📝 Update user:', { id, username, email, role });
+
+        // Cek apakah user ada
+        const [user] = await db.execute('SELECT * FROM users WHERE id = ?', [id]);
+        if (user.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'User tidak ditemukan'
+            });
+        }
+
+        let sql = 'UPDATE users SET username = ?, email = ?, role = ?';
+        const params = [username, email, role];
+
+        if (password && password.length > 0) {
+            const hashedPassword = await bcrypt.hash(password, 10);
+            sql += ', password = ?';
+            params.push(hashedPassword);
+        }
+
+        sql += ' WHERE id = ?';
+        params.push(id);
+
+        await db.execute(sql, params);
+
+        res.json({
+            success: true,
+            message: 'User berhasil diupdate'
+        });
+    } catch (err) {
+        console.error('❌ Error updating user:', err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// ✅ DELETE USER
+app.delete('/users/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        // Cek apakah user ada
+        const [user] = await db.execute('SELECT username FROM users WHERE id = ?', [id]);
+        if (user.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'User tidak ditemukan'
+            });
+        }
+
+        // Cek jangan hapus admin utama
+        if (user[0]?.username === 'admin') {
+            return res.status(400).json({
+                success: false,
+                message: 'Tidak bisa menghapus user admin utama!'
+            });
+        }
+
+        await db.execute('DELETE FROM users WHERE id = ?', [id]);
+
+        res.json({
+            success: true,
+            message: 'User berhasil dihapus'
+        });
+    } catch (err) {
+        console.error('❌ Error deleting user:', err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
 /* ===== LAPORAN PDF ===== */
 app.get('/laporan', async (req, res) => {
     try {
