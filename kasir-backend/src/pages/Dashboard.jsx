@@ -56,20 +56,20 @@ const Dashboard = () => {
   }, [user]);
 
   useEffect(() => {
-  window.refreshDashboard = () => {
-    console.log('🔄 Refreshing dashboard...');
-    setRefreshTrigger(prev => prev + 1);
-  };
-  return () => {
-    delete window.refreshDashboard;
-  };
-}, []);
+    window.refreshDashboard = () => {
+      console.log('🔄 Refreshing dashboard...');
+      setRefreshTrigger(prev => prev + 1);
+    };
+    return () => {
+      delete window.refreshDashboard;
+    };
+  }, []);
 
-useEffect(() => {
-  if (refreshTrigger > 0) {
-    fetchStats();
-  }
-}, [refreshTrigger]);
+  useEffect(() => {
+    if (refreshTrigger > 0) {
+      fetchStats();
+    }
+  }, [refreshTrigger]);
 
   const fetchStats = async () => {
     try {
@@ -88,13 +88,14 @@ useEffect(() => {
         totalPromos: 0
       });
 
-      // Ambil transaksi terbaru dengan customer_name
+      // Ambil transaksi terbaru
       const transaksiRes = await api.get('/transaksi');
+      console.log('Transaksi response:', transaksiRes.data);
+      
       const transaksi = transaksiRes.data?.data || transaksiRes.data || [];
       const recent = Array.isArray(transaksi) ? transaksi.slice(-5).reverse() : [];
       setRecentTransactions(recent);
       
-      // Ambil customer terbaru
       if (recent.length > 0) {
         setLatestCustomer(recent[0].customer_name || 'Umum');
       }
@@ -228,7 +229,7 @@ useEffect(() => {
           </Row>
 
           {/* Recent Transactions */}
-          <Row>
+          <Row className="mt-4">
             <Col md={12}>
               <Card className="shadow-sm border-0 p-3">
                 <h5 className="mb-3">🕐 Transaksi Terbaru</h5>
@@ -248,7 +249,11 @@ useEffect(() => {
                           <tr key={trx.id || index}>
                             <td>{index + 1}</td>
                             <td>{trx.customer_name || 'Umum'}</td>
-                            <td>{new Date(trx.created_at).toLocaleDateString()}</td>
+                            <td>{trx.created_at ? new Date(trx.created_at).toLocaleDateString('id-ID', {
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: 'numeric'
+                            }) : '-'}</td>
                             <td>Rp {trx.total?.toLocaleString() || 0}</td>
                           </tr>
                         ))}

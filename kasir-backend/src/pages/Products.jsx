@@ -1,3 +1,4 @@
+// src/pages/Products.jsx
 import React, { useState, useEffect } from 'react';
 import { Container, Card, Table, Button, Modal, Form, Alert, Row, Col } from 'react-bootstrap';
 import { Add, Edit, Delete } from '@mui/icons-material';
@@ -108,6 +109,12 @@ const Products = () => {
       }
       
       fetchProducts();
+      
+      // Refresh transaksi jika window ada
+      if (window.refreshTransactions) {
+        window.refreshTransactions();
+      }
+      
       setTimeout(handleCloseModal, 1500);
     } catch (error) {
       console.error('Error:', error);
@@ -121,6 +128,11 @@ const Products = () => {
         await api.delete(`/produk/${id}`);
         fetchProducts();
         setMessage('✅ Produk berhasil dihapus!');
+        
+        if (window.refreshTransactions) {
+          window.refreshTransactions();
+        }
+        
         setTimeout(() => setMessage(''), 3000);
       } catch (error) {
         console.error('Error:', error);
@@ -145,11 +157,15 @@ const Products = () => {
   return (
     <div className="d-flex">
       <Sidebar />
-      <div className="flex-grow-1 p-4" style={{ marginLeft: '250px', backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
+      <div className="flex-grow-1 p-4" style={{ marginLeft: '250px', backgroundColor: '#f5f0eb', minHeight: '100vh' }}>
         <Container fluid>
           <div className="d-flex justify-content-between align-items-center mb-4">
-            <h2 className="fw-bold">📦 Manajemen Produk</h2>
-            <Button variant="primary" onClick={() => handleOpenModal()}>
+            <h2 className="fw-bold" style={{ color: '#5d4037' }}>📦 Manajemen Produk</h2>
+            <Button 
+              variant="primary" 
+              onClick={() => handleOpenModal()}
+              style={{ backgroundColor: '#6d4c41', borderColor: '#5d4037' }}
+            >
               <Add /> Tambah Produk
             </Button>
           </div>
@@ -160,17 +176,17 @@ const Products = () => {
             </Alert>
           )}
 
-          <Card className="shadow-sm border-0">
+          <Card className="shadow-sm border-0" style={{ backgroundColor: '#fff8f0' }}>
             <Card.Body>
               <Table striped bordered hover responsive>
-                <thead className="table-light">
+                <thead className="table-light" style={{ backgroundColor: '#efebe9' }}>
                   <tr>
-                    <th>ID</th>
-                    <th>Nama Produk</th>
-                    <th>Harga</th>
-                    <th>Stok</th>
-                    <th>Foto</th>
-                    <th>Aksi</th>
+                    <th style={{ color: '#5d4037' }}>ID</th>
+                    <th style={{ color: '#5d4037' }}>Nama Produk</th>
+                    <th style={{ color: '#5d4037' }}>Harga</th>
+                    <th style={{ color: '#5d4037' }}>Stok</th>
+                    <th style={{ color: '#5d4037' }}>Foto</th>
+                    <th style={{ color: '#5d4037' }}>Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -193,7 +209,13 @@ const Products = () => {
                           )}
                         </td>
                         <td>
-                          <Button variant="warning" size="sm" onClick={() => handleOpenModal(product)} className="me-2">
+                          <Button 
+                            variant="warning" 
+                            size="sm" 
+                            onClick={() => handleOpenModal(product)} 
+                            className="me-2"
+                            style={{ backgroundColor: '#8d6e63', borderColor: '#6d4c41', color: '#fff' }}
+                          >
                             <Edit />
                           </Button>
                           <Button variant="danger" size="sm" onClick={() => handleDelete(product.id)}>
@@ -214,49 +236,53 @@ const Products = () => {
 
           {/* Modal Form */}
           <Modal show={showModal} onHide={handleCloseModal} size="lg">
-            <Modal.Header closeButton>
+            <Modal.Header closeButton style={{ backgroundColor: '#6d4c41', color: '#fff' }}>
               <Modal.Title>{editingId ? '✏️ Edit Produk' : '➕ Tambah Produk'}</Modal.Title>
             </Modal.Header>
             <Form onSubmit={handleSubmit}>
-              <Modal.Body>
+              <Modal.Body style={{ backgroundColor: '#f5f0eb' }}>
                 <Row>
                   <Col md={8}>
                     <Form.Group className="mb-3">
-                      <Form.Label>Nama Produk</Form.Label>
+                      <Form.Label style={{ color: '#5d4037', fontWeight: '600' }}>Nama Produk</Form.Label>
                       <Form.Control
                         type="text"
                         name="nama_produk"
                         value={formData.nama_produk}
                         onChange={handleInputChange}
                         required
+                        style={{ borderColor: '#d7ccc8' }}
                       />
                     </Form.Group>
                     <Form.Group className="mb-3">
-                      <Form.Label>Harga</Form.Label>
+                      <Form.Label style={{ color: '#5d4037', fontWeight: '600' }}>Harga</Form.Label>
                       <Form.Control
                         type="number"
                         name="harga"
                         value={formData.harga}
                         onChange={handleInputChange}
                         required
+                        style={{ borderColor: '#d7ccc8' }}
                       />
                     </Form.Group>
                     <Form.Group className="mb-3">
-                      <Form.Label>Stok</Form.Label>
+                      <Form.Label style={{ color: '#5d4037', fontWeight: '600' }}>Stok</Form.Label>
                       <Form.Control
                         type="number"
                         name="stok"
                         value={formData.stok}
                         onChange={handleInputChange}
                         required
+                        style={{ borderColor: '#d7ccc8' }}
                       />
                     </Form.Group>
                     <Form.Group className="mb-3">
-                      <Form.Label>Foto Produk</Form.Label>
+                      <Form.Label style={{ color: '#5d4037', fontWeight: '600' }}>Foto Produk</Form.Label>
                       <Form.Control
                         type="file"
                         accept="image/*"
                         onChange={handleFileChange}
+                        style={{ borderColor: '#d7ccc8' }}
                       />
                     </Form.Group>
                   </Col>
@@ -271,24 +297,24 @@ const Products = () => {
                             maxHeight: '200px', 
                             objectFit: 'cover', 
                             borderRadius: '8px',
-                            border: '2px solid #ddd'
+                            border: '2px solid #d7ccc8'
                           }} 
                         />
                         <p className="text-muted mt-2 small">Preview Foto</p>
                       </div>
                     ) : (
-                      <div className="border rounded p-4 text-muted" style={{ height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div className="border rounded p-4 text-muted" style={{ height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderColor: '#d7ccc8 !important' }}>
                         <span>No Image</span>
                       </div>
                     )}
                   </Col>
                 </Row>
               </Modal.Body>
-              <Modal.Footer>
-                <Button variant="secondary" onClick={handleCloseModal}>
+              <Modal.Footer style={{ backgroundColor: '#efebe9' }}>
+                <Button variant="secondary" onClick={handleCloseModal} style={{ backgroundColor: '#8d6e63', borderColor: '#6d4c41' }}>
                   Batal
                 </Button>
-                <Button variant="primary" type="submit">
+                <Button variant="primary" type="submit" style={{ backgroundColor: '#6d4c41', borderColor: '#5d4037' }}>
                   {editingId ? 'Update' : 'Simpan'}
                 </Button>
               </Modal.Footer>

@@ -10,7 +10,10 @@ const upload = require('./middleware/upload');
 const app = express();
 
 /* ===== MIDDLEWARE DASAR ===== */ 
-app.use(cors());
+app.use(cors({
+    origin: 'http://localhost:5173',
+    credentials: true
+}));
 app.use(express.json()); 
 app.use(express.urlencoded({ extended: true })); 
 
@@ -35,10 +38,12 @@ const authenticateToken = (req, res, next) => {
 
 /* ===== AUTHENTICATION ===== */
 
-// ✅ REGISTER (SUDAH SUPPORT FOTO)
-app.post('/register', upload.single('foto'), async (req, res) => {
+// ✅ REGISTER
+app.post('/register', async (req, res) => {
     try {
         const { username, email, password, role } = req.body;
+
+        console.log('📝 Register request:', { username, email, role });
 
         if (!username || !password || !email) {
             return res.status(400).json({
@@ -47,24 +52,41 @@ app.post('/register', upload.single('foto'), async (req, res) => {
             });
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const foto = req.file ? req.file.filename : null;
+        // Cek username sudah ada
+        const [existing] = await db.execute('SELECT * FROM users WHERE username = ?', [username]);
+        if (existing.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Username sudah terdaftar!'
+            });
+        }
 
-        const sql = 'INSERT INTO users (username, email, password, role, foto) VALUES (?, ?, ?, ?, ?)';
-        await db.execute(sql, [username, email, hashedPassword, role || 'user', foto]);
+        // Cek email sudah ada
+        const [existingEmail] = await db.execute('SELECT * FROM users WHERE email = ?', [email]);
+        if (existingEmail.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email sudah terdaftar!'
+            });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const sql = 'INSERT INTO users (username, email, password, role, created_at, updated_at) VALUES (?, ?, ?, ?, NOW(), NOW())';
+        await db.execute(sql, [username, email, hashedPassword, role || 'user']);
 
         res.json({
             success: true,
-            message: 'User berhasil didaftarkan',
-            foto: foto
+            message: 'User berhasil didaftarkan'
         });
 
     } catch (err) {
+        console.error('❌ Register error:', err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
 
-// ✅ LOGIN - DIPERBARUI SESUAI PERINTAH: RESPONSE LANGSUNG BERISI DATA
+// ✅ LOGIN
 app.post('/login', async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -86,7 +108,6 @@ app.post('/login', async (req, res) => {
                 { expiresIn: '1d' }
             );
 
-            // ✅ BAGIAN INI SUDAH DIUBAH PERSIS SESUAI PERINTAHAN
             res.json({
                 success: true,
                 message: 'Login berhasil',
@@ -102,6 +123,7 @@ app.post('/login', async (req, res) => {
         }
 
     } catch (err) {
+        console.error('❌ Login error:', err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
@@ -112,7 +134,7 @@ app.use('/api', apiRoutes);
 
 // TEST ROOT
 app.get('/', (req, res) => {
-    res.send('API Kasir Berjalan');
+    res.json({ message: 'API Kasir Berjalan' });
 });
 
 /* ===== PRODUK ===== */
@@ -120,23 +142,25 @@ app.get('/', (req, res) => {
 // ✅ GET PRODUK
 app.get('/produk', async (req, res) => {
     try {
-        const [results] = await db.execute('SELECT * FROM produk');
+        const [results] = await db.execute('SELECT * FROM produk ORDER BY id ASC');
         res.json({
             success: true,
+            message: 'Daftar produk berhasil diambil',
             data: results
         });
     } catch (err) {
-        res.json({ success: false, error: err.message });
+        console.error('❌ Error fetching products:', err);
+        res.status(500).json({ success: false, error: err.message });
     }
 });
 
-// ✅ POST PRODUK (DENGAN UPLOAD FOTO)
+// ✅ POST PRODUK
 app.post('/produk', upload.single('foto'), async (req, res) => {
     try {
         const { nama_produk, harga, stok } = req.body;
         const foto = req.file ? req.file.filename : null;
 
-        console.log('Data:', { nama_produk, harga, stok, foto });
+        console.log('📦 Produk baru:', { nama_produk, harga, stok, foto });
 
         const sql = 'INSERT INTO produk (nama_produk, harga, stok, foto) VALUES (?, ?, ?, ?)';
         const [result] = await db.execute(sql, [nama_produk, harga, stok, foto]);
@@ -148,7 +172,7 @@ app.post('/produk', upload.single('foto'), async (req, res) => {
             foto: foto
         });
     } catch (err) {
-        console.error('Error:', err);
+        console.error('❌ Error adding product:', err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
@@ -178,6 +202,7 @@ app.put('/produk/:id', upload.single('foto'), async (req, res) => {
             message: 'Produk berhasil diupdate'
         });
     } catch (err) {
+        console.error('❌ Error updating product:', err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
@@ -193,17 +218,20 @@ app.delete('/produk/:id', async (req, res) => {
             message: 'Produk berhasil dihapus'
         });
     } catch (err) {
+        console.error('❌ Error deleting product:', err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
-// ✅ TAMBAH TRANSAKSI + KURANGI STOK
+
+/* ===== TRANSAKSI ===== */
+
+// ✅ POST TRANSAKSI + KURANGI STOK
 app.post('/transaksi', authenticateToken, async (req, res) => {
     try {
-        const { total, customer_name, payment, change, payment_method, items } = req.body;
+        const { total, customer_name, payment, change, items } = req.body;
 
         console.log('📝 Transaksi baru:', { total, customer_name, items });
 
-        // Mulai transaksi database
         const connection = await db.getConnection();
         await connection.beginTransaction();
 
@@ -228,7 +256,7 @@ app.post('/transaksi', authenticateToken, async (req, res) => {
 
             res.json({
                 success: true,
-                message: 'Transaksi berhasil ditambahkan',
+                message: 'Transaksi berhasil',
                 id: result.insertId,
                 total,
                 customer_name: customer_name || 'Umum'
@@ -249,7 +277,8 @@ app.post('/transaksi', authenticateToken, async (req, res) => {
         });
     }
 });
-// ✅ GET TRANSAKSI (dengan customer_name)
+
+// ✅ GET TRANSAKSI
 app.get('/transaksi', authenticateToken, async (req, res) => {
     try {
         const [results] = await db.execute('SELECT * FROM transaksi ORDER BY id DESC');
@@ -260,6 +289,7 @@ app.get('/transaksi', authenticateToken, async (req, res) => {
         });
 
     } catch (err) {
+        console.error('❌ Error fetching transactions:', err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
@@ -267,22 +297,10 @@ app.get('/transaksi', authenticateToken, async (req, res) => {
 /* ===== DASHBOARD STATISTIK ===== */
 app.get('/dashboard', async (req, res) => {
     try {
-
-        const [produk] = await db.execute(
-            'SELECT COUNT(*) AS totalProduk FROM produk'
-        );
-
-        const [transaksi] = await db.execute(
-            'SELECT COUNT(*) AS totalTransaksi FROM transaksi'
-        );
-
-        const [users] = await db.execute(
-            'SELECT COUNT(*) AS totalUser FROM users'
-        );
-
-        const [pendapatan] = await db.execute(
-            'SELECT IFNULL(SUM(total),0) AS totalPendapatan FROM transaksi'
-        );
+        const [produk] = await db.execute('SELECT COUNT(*) AS totalProduk FROM produk');
+        const [transaksi] = await db.execute('SELECT COUNT(*) AS totalTransaksi FROM transaksi');
+        const [users] = await db.execute('SELECT COUNT(*) AS totalUser FROM users');
+        const [pendapatan] = await db.execute('SELECT IFNULL(SUM(total),0) AS totalPendapatan FROM transaksi');
 
         res.json({
             success: true,
@@ -293,21 +311,18 @@ app.get('/dashboard', async (req, res) => {
         });
 
     } catch (err) {
-
+        console.error('❌ Error fetching dashboard:', err);
         res.status(500).json({
             success: false,
             error: err.message
         });
-
     }
 });
 
-/* ===== ENDPOINT USERS - SUDAH ADA EMAIL ===== */
+/* ===== ENDPOINT USERS ===== */
 app.get('/users', async (req, res) => {
     try {
-        const [rows] = await db.execute(
-            'SELECT id, username, email, role FROM users'
-        );
+        const [rows] = await db.execute('SELECT id, username, email, role FROM users');
 
         res.json({
             success: true,
@@ -315,12 +330,11 @@ app.get('/users', async (req, res) => {
         });
 
     } catch (err) {
-
+        console.error('❌ Error fetching users:', err);
         res.status(500).json({
             success: false,
             error: err.message
         });
-
     }
 });
 
@@ -343,14 +357,18 @@ app.get('/laporan', async (req, res) => {
         doc.end();
 
     } catch (err) {
-        res.json({ error: err.message });
+        console.error('❌ Error generating PDF:', err);
+        res.status(500).json({ error: err.message });
     }
 });
 
+/* ===== START SERVER ===== */
 const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`=========================================`);
-    console.log(`Server jalan di http://localhost:${PORT}`);
-    console.log(`Rute API: http://localhost:3000/api/produk`);
+    console.log(`✅ Server jalan di http://localhost:${PORT}`);
+    console.log(`📦 Produk: http://localhost:3000/produk`);
+    console.log(`🧾 Transaksi: http://localhost:3000/transaksi`);
+    console.log(`📊 Dashboard: http://localhost:3000/dashboard`);
     console.log(`=========================================`);
 });
