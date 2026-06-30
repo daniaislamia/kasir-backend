@@ -1,193 +1,118 @@
-import { Link } from "react-router-dom";
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Container, Row, Col, Card, Button } from 'react-bootstrap';
+import { FaCoffee, FaShoppingCart, FaChartLine, FaUsers } from 'react-icons/fa';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
-function LandingPage() {
+const LandingPage = () => {
+  const navigate = useNavigate();
+
   return (
-    <div>
-      <nav className="navbar navbar-expand-lg navbar-dark bg-dark px-5">
-        <div className="container-fluid">
-          <h3 className="text-white fw-bold">Kasir App</h3>
-
-          <ul className="navbar-nav mx-auto d-flex flex-row gap-4">
-            <li className="nav-item">
-              <a className="nav-link text-white" href="#beranda">
-                Beranda
-              </a>
-            </li>
-            <li className="nav-item">
-              <a className="nav-link text-white" href="#fitur">
-                Fitur
-              </a>
-            </li>
-            <li className="nav-item">
-              <a className="nav-link text-white" href="#tentang">
-                Tentang Aplikasi
-              </a>
-            </li>
-            <li className="nav-item">
-              <a className="nav-link text-white" href="#kontak">
-                Kontak
-              </a>
-            </li>
-          </ul>
-
-          <div className="d-flex gap-2">
-            <Link to="/login" className="btn btn-outline-light">
-              Masuk
-            </Link>
-            <Link to="/register" className="btn btn-primary">
+    <div className="min-vh-100" style={{ backgroundColor: '#0f172a' }}>
+      {/* Header */}
+      <div className="py-3 px-4" style={{ backgroundColor: 'rgba(255,255,255,0.05)' }}>
+        <div className="d-flex justify-content-between align-items-center container">
+          <h3 className="text-white m-0">☕ Kedai Kopi AIM</h3>
+          <div>
+            <Button 
+              variant="outline-light" 
+              className="me-2"
+              onClick={() => navigate('/login')}
+            >
+              Login
+            </Button>
+            <Button 
+              variant="primary"
+              onClick={() => navigate('/register')}
+            >
               Daftar
-            </Link>
+            </Button>
           </div>
         </div>
-      </nav>
+      </div>
 
-      <section
-        id="beranda"
-        className="text-white"
-        style={{
-          background: "linear-gradient(135deg,#2563eb,#1d4ed8)",
-          minHeight: "650px",
-          display: "flex",
-          alignItems: "center",
-        }}
-      >
-        <div className="container">
-          <div className="row align-items-center">
-            <div className="col-md-5 text-center">
-              <h1 style={{ fontSize: "120px" }}>🛒</h1>
+      {/* Hero Section */}
+      <Container className="py-5 text-center text-white">
+        <Row className="justify-content-center">
+          <Col md={8}>
+            <h1 className="display-3 fw-bold mb-4">
+              Solusi POS Terbaik untuk <br />
+              <span style={{ color: '#f0b90b' }}>Kedai Kopi</span> Anda
+            </h1>
+            <p className="lead text-muted mb-4">
+              Kelola transaksi, produk, dan laporan dengan mudah.
+              Sistem kasir modern untuk bisnis Anda.
+            </p>
+            <div className="d-flex justify-content-center gap-3 flex-wrap">
+              <Button 
+                variant="primary" 
+                size="lg" 
+                onClick={() => navigate('/register')}
+              >
+                Mulai Sekarang
+              </Button>
+              <Button 
+                variant="outline-light" 
+                size="lg"
+                onClick={() => navigate('/login')}
+              >
+                Login
+              </Button>
             </div>
-            <div className="col-md-7">
-              <h1 className="fw-bold mb-3">Kelola Usaha Lebih Mudah Bersama Kasir App</h1>
-              <p className="fs-5">
-                Catat transaksi, kelola stok barang, dan lihat laporan penjualan jadi lebih cepat dan praktis.
-              </p>
+          </Col>
+        </Row>
+      </Container>
 
-              <div className="mt-4 d-flex gap-3">
-                <Link
-                  to="/login"
-                  className="btn btn-light btn-lg"
-                >
-                  Mulai Sekarang
-                </Link>
-                <a
-                  href="#fitur"
-                  className="btn btn-outline-light btn-lg"
-                >
-                  Lihat Fitur
-                </a>
-              </div>
+      {/* Features */}
+      <Container className="py-5">
+        <Row className="g-4">
+          <Col md={3}>
+            <Card className="h-100 text-center bg-dark text-white border-secondary">
+              <Card.Body>
+                <FaCoffee size={40} className="mb-3" style={{ color: '#f0b90b' }} />
+                <h5>Manajemen Produk</h5>
+                <p className="text-muted">Kelola menu kopi dan produk dengan mudah</p>
+              </Card.Body>
+            </Card>
+          </Col>
+          <Col md={3}>
+            <Card className="h-100 text-center bg-dark text-white border-secondary">
+              <Card.Body>
+                <FaShoppingCart size={40} className="mb-3" style={{ color: '#f0b90b' }} />
+                <h5>POS Kasir</h5>
+                <p className="text-muted">Transaksi cepat dan mudah</p>
+              </Card.Body>
+            </Card>
+          </Col>
+          <Col md={3}>
+            <Card className="h-100 text-center bg-dark text-white border-secondary">
+              <Card.Body>
+                <FaChartLine size={40} className="mb-3" style={{ color: '#f0b90b' }} />
+                <h5>Laporan Real-time</h5>
+                <p className="text-muted">Pantau pendapatan dan tren bisnis</p>
+              </Card.Body>
+            </Card>
+          </Col>
+          <Col md={3}>
+            <Card className="h-100 text-center bg-dark text-white border-secondary">
+              <Card.Body>
+                <FaUsers size={40} className="mb-3" style={{ color: '#f0b90b' }} />
+                <h5>Multi-user</h5>
+                <p className="text-muted">Kelola kasir dan admin</p>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
 
-              <div className="row mt-4">
-                <div className="col-md-4">
-                  <div className="card p-3 text-center">🔒 Data Aman</div>
-                </div>
-                <div className="col-md-4">
-                  <div className="card p-3 text-center">⚡ Transaksi Cepat</div>
-                </div>
-                <div className="col-md-4">
-                  <div className="card p-3 text-center">📊 Laporan Lengkap</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="fitur" className="container py-5">
-        <h2 className="text-center mb-5">Fitur Utama</h2>
-        <div className="row g-4">
-          <div className="col-md-3">
-            <div
-              className="card shadow-lg border-0 p-4 text-center h-100"
-            >
-              📦
-              <h5>Kelola Produk</h5>
-            </div>
-          </div>
-          <div className="col-md-3">
-            <div
-              className="card shadow-lg border-0 p-4 text-center h-100"
-            >
-              💳
-              <h5>Buat Transaksi</h5>
-            </div>
-          </div>
-          <div className="col-md-3">
-            <div
-              className="card shadow-lg border-0 p-4 text-center h-100"
-            >
-              📊
-              <h5>Lihat Laporan</h5>
-            </div>
-          </div>
-          <div className="col-md-3">
-            <div
-              className="card shadow-lg border-0 p-4 text-center h-100"
-            >
-              ⚙️
-              <h5>Pengaturan</h5>
-            </div>
-          </div>
-        </div>
-
-        <div className="row text-center mt-5">
-          <div className="col-md-4">
-            <h2 className="fw-bold text-primary">
-              100+
-            </h2>
-            <p>Transaksi Tercatat</p>
-          </div>
-          <div className="col-md-4">
-            <h2 className="fw-bold text-success">
-              50+
-            </h2>
-            <p>Produk Dikelola</p>
-          </div>
-          <div className="col-md-4">
-            <h2 className="fw-bold text-warning">
-              24/7
-            </h2>
-            <p>Akses Sistem</p>
-          </div>
-        </div>
-
-        <div className="text-center mt-5">
-          <Link to="/login" className="btn btn-lg btn-primary px-5">
-            Mulai Gunakan Sekarang
-          </Link>
-        </div>
-      </section>
-
-      <section id="tentang" className="bg-light py-5">
-        <div className="container">
-          <h2 className="text-center fw-bold mb-4">
-            Tentang Kasir App
-          </h2>
-          <p className="text-center fs-5" style={{ maxWidth: "700px", margin: "0 auto" }}>
-            Kasir App adalah sistem pencatatan penjualan sederhana yang dirancang untuk memudahkan pengelolaan usaha.
-            Dibuat agar pemilik usaha bisa memantau stok, mencatat transaksi, dan melihat laporan dengan mudah, cepat, dan aman.
-          </p>
-        </div>
-      </section>
-
-      <section id="kontak" className="container py-5">
-        <h2 className="text-center mb-4">Kontak Kami</h2>
-        <div className="row justify-content-center">
-          <div className="col-md-6 text-center">
-            <p>📧 Email: support@kasirapp.id</p>
-            <p>📞 Telepon: 0812-3456-7890</p>
-            <p>📍 Alamat: Jakarta, Indonesia</p>
-          </div>
-        </div>
-      </section>
-
-      <footer className="bg-black text-white text-center py-3">
-        <p className="mb-0">
-          © 2026 Kasir App | Sistem Informasi Kasir Berbasis Web
-        </p>
-      </footer>
+      {/* Footer */}
+      <div className="py-4 text-center text-muted border-top border-secondary">
+        <Container>
+          <p className="mb-0">© 2026 Kedai Kopi AIM. All rights reserved.</p>
+        </Container>
+      </div>
     </div>
   );
-}
+};
 
 export default LandingPage;
