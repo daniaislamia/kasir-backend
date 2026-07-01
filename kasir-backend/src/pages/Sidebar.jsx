@@ -26,7 +26,7 @@ const Sidebar = () => {
 
   return (
     <div className="bg-dark text-white vh-100 p-3" style={{ width: '250px', position: 'fixed' }}>
-      <h4 className="mb-4">Kedai Kopi AIM</h4>
+      <h4 className="mb-4">🧾 Kasir App</h4>
       <Nav className="flex-column">
         {menuItems.map((item) => (
           <Nav.Link 

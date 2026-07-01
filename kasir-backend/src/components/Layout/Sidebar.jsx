@@ -47,7 +47,7 @@ const Sidebar = () => {
       }}
     >
       <h4 className="mb-4 text-center" style={{ color: '#f0b90b' }}>
-        ☕ Kedai Kopi AIM
+        🧾 Kasir App
       </h4>
       <Nav className="flex-column">
         {menuItems.map((item) => (

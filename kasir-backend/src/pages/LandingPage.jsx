@@ -12,7 +12,7 @@ const LandingPage = () => {
       {/* Header */}
       <div className="py-3 px-4" style={{ backgroundColor: 'rgba(255,255,255,0.05)' }}>
         <div className="d-flex justify-content-between align-items-center container">
-          <h3 className="text-white m-0">☕ Kedai Kopi AIM</h3>
+          <h3 className="text-white m-0">🛒 Kasir App</h3>
           <div>
             <Button 
               variant="outline-light" 
@@ -37,7 +37,7 @@ const LandingPage = () => {
           <Col md={8}>
             <h1 className="display-3 fw-bold mb-4">
               Solusi POS Terbaik untuk <br />
-              <span style={{ color: '#f0b90b' }}>Kedai Kopi</span> Anda
+              <span style={{ color: '#f0b90b' }}>Kasir App</span> Anda
             </h1>
             <p className="lead text-muted mb-4">
               Kelola transaksi, produk, dan laporan dengan mudah.
@@ -71,7 +71,7 @@ const LandingPage = () => {
               <Card.Body>
                 <FaCoffee size={40} className="mb-3" style={{ color: '#f0b90b' }} />
                 <h5>Manajemen Produk</h5>
-                <p className="text-muted">Kelola menu kopi dan produk dengan mudah</p>
+                <p className="text-muted"> Kelola menu & produk dengan mudah</p>
               </Card.Body>
             </Card>
           </Col>
@@ -80,7 +80,7 @@ const LandingPage = () => {
               <Card.Body>
                 <FaShoppingCart size={40} className="mb-3" style={{ color: '#f0b90b' }} />
                 <h5>POS Kasir</h5>
-                <p className="text-muted">Transaksi cepat dan mudah</p>
+                <p className="text-muted"> Transaksi cepat dan mudah</p>
               </Card.Body>
             </Card>
           </Col>
@@ -89,7 +89,7 @@ const LandingPage = () => {
               <Card.Body>
                 <FaChartLine size={40} className="mb-3" style={{ color: '#f0b90b' }} />
                 <h5>Laporan Real-time</h5>
-                <p className="text-muted">Pantau pendapatan dan tren bisnis</p>
+                <p className="text-muted"> Pantau pendapatan dan tren bisnis</p>
               </Card.Body>
             </Card>
           </Col>
@@ -108,7 +108,7 @@ const LandingPage = () => {
       {/* Footer */}
       <div className="py-4 text-center text-muted border-top border-secondary">
         <Container>
-          <p className="mb-0">© 2026 Kedai Kopi AIM. All rights reserved.</p>
+          <p className="mb-0">© 2026 Kasir App. All rights reserved.</p>
         </Container>
       </div>
     </div>
