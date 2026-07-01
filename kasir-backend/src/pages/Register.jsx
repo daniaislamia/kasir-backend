@@ -1,3 +1,4 @@
+// src/pages/Register.jsx
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
@@ -17,7 +18,7 @@ function Register() {
 
     try {
       const res = await axios.post(
-        "http://localhost:3000/register",  // ← Endpoint yang benar
+        "http://localhost:3000/register",
         {
           username: nama,
           email: email,
@@ -26,14 +27,13 @@ function Register() {
         }
       );
 
-      alert(res.data.message || "Registrasi berhasil!");
+      alert(res.data.message);
       navigate("/login");
 
     } catch (err) {
       console.log(err);
       alert(
         err.response?.data?.message ||
-        err.response?.data?.error ||
         "Registrasi gagal"
       );
     }
@@ -54,25 +54,15 @@ function Register() {
           borderRadius: "20px",
         }}
       >
-        <div className="d-flex justify-content-between align-items-center mb-3">
-          <Link to="/" className="text-decoration-none text-muted" style={{ fontSize: '14px' }}>
-            ← Kembali
-          </Link>
-          <div className="text-center flex-grow-1">
-            <h1 style={{ fontSize: "32px", marginBottom: '0' }}>🛒</h1>
-          </div>
-          <span style={{ width: '70px' }}></span>
-        </div>
-
-        <div className="text-center mb-3">
+        <div className="text-center mb-4">
+          <h1 style={{ fontSize: "42px" }}>🛒</h1>
           <h2 style={{ color: "#ffffff", fontWeight: "bold" }}>
             Kasir App
           </h2>
-          <p style={{ color: "#b0b0b0" }}>
-            Buat Akun Baru
-          </p>
+          <p style={{ color: "#ffffff" }}>Buat Akun Baru</p>
         </div>
 
+        {/* INPUT NAMA */}
         <input
           type="text"
           className="form-control mb-3"
@@ -80,13 +70,14 @@ function Register() {
           value={nama}
           onChange={(e) => setNama(e.target.value)}
           style={{
-            backgroundColor: "#2a2a40",
+            backgroundColor: "#ffffff",
             color: "#ffffff",
             border: "1px solid #3d3d5c",
             padding: "12px",
           }}
         />
 
+        {/* INPUT EMAIL */}
         <input
           type="email"
           className="form-control mb-3"
@@ -94,13 +85,14 @@ function Register() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           style={{
-            backgroundColor: "#2a2a40",
+            backgroundColor: "#ffffff",
             color: "#ffffff",
             border: "1px solid #3d3d5c",
             padding: "12px",
           }}
         />
 
+        {/* INPUT PASSWORD */}
         <input
           type="password"
           className="form-control mb-4"
@@ -108,7 +100,7 @@ function Register() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           style={{
-            backgroundColor: "#2a2a40",
+            backgroundColor: "#ffffff",
             color: "#ffffff",
             border: "1px solid #3d3d5c",
             padding: "12px",
@@ -130,16 +122,18 @@ function Register() {
           REGISTER
         </button>
 
-        <p className="text-center mt-4 mb-2" style={{ color: "#b0b0b0" }}>
+        <p
+          className="text-center mt-4 mb-0"
+          style={{
+            color: "#b0b0b0",
+          }}
+        >
           Sudah punya akun?
-          <Link to="/login" className="ms-2 text-info text-decoration-none">
+          <Link
+            to="/login"
+            className="ms-2 text-info text-decoration-none"
+          >
             Login
-          </Link>
-        </p>
-
-        <p className="text-center mb-0">
-          <Link to="/" className="text-muted text-decoration-none" style={{ fontSize: '12px' }}>
-            🏠 Kembali ke Landing Page
           </Link>
         </p>
       </div>

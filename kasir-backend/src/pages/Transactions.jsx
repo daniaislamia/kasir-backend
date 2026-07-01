@@ -187,7 +187,9 @@ const Transactions = () => {
       
       fetchProducts();
       
+      // 🔄 REFRESH DASHBOARD
       if (window.refreshDashboard) {
+        console.log('🔄 Memanggil refresh dashboard...');
         window.refreshDashboard();
       }
       

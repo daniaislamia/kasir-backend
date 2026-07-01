@@ -52,7 +52,6 @@ app.post('/register', async (req, res) => {
             });
         }
 
-        // Cek username sudah ada
         const [existing] = await db.execute('SELECT * FROM users WHERE username = ?', [username]);
         if (existing.length > 0) {
             return res.status(400).json({
@@ -61,7 +60,6 @@ app.post('/register', async (req, res) => {
             });
         }
 
-        // Cek email sudah ada
         const [existingEmail] = await db.execute('SELECT * FROM users WHERE email = ?', [email]);
         if (existingEmail.length > 0) {
             return res.status(400).json({
@@ -233,7 +231,7 @@ app.delete('/produk/:id', async (req, res) => {
 
 /* ===== TRANSAKSI ===== */
 
-// ✅ POST TRANSAKSI + KURANGI STOK
+// ✅ POST TRANSAKSI + KURANGI STOK + SIMPAN DETAIL
 app.post('/transaksi', authenticateToken, async (req, res) => {
     try {
         const { total, customer_name, payment, change, items } = req.body;
@@ -244,13 +242,16 @@ app.post('/transaksi', authenticateToken, async (req, res) => {
         await connection.beginTransaction();
 
         try {
-            // 1. Insert ke tabel transaksi
             const sql = 'INSERT INTO transaksi (total, customer_name, created_at) VALUES (?, ?, NOW())';
             const [result] = await connection.execute(sql, [total, customer_name || 'Umum']);
+            const transaksiId = result.insertId;
 
-            // 2. Kurangi stok untuk setiap item
             if (items && items.length > 0) {
                 for (const item of items) {
+                    const detailSql = 'INSERT INTO detail_transaksi (transaksi_id, produk_id, quantity, harga, subtotal) VALUES (?, ?, ?, ?, ?)';
+                    const subtotal = item.harga * item.qty;
+                    await connection.execute(detailSql, [transaksiId, item.id_produk, item.qty, item.harga, subtotal]);
+                    
                     const updateStok = 'UPDATE produk SET stok = stok - ? WHERE id = ? AND stok >= ?';
                     const [updateResult] = await connection.execute(updateStok, [item.qty, item.id_produk, item.qty]);
                     
@@ -265,7 +266,7 @@ app.post('/transaksi', authenticateToken, async (req, res) => {
             res.json({
                 success: true,
                 message: 'Transaksi berhasil',
-                id: result.insertId,
+                id: transaksiId,
                 total,
                 customer_name: customer_name || 'Umum'
             });
@@ -301,6 +302,85 @@ app.get('/transaksi', authenticateToken, async (req, res) => {
         res.status(500).json({ success: false, error: err.message });
     }
 });
+
+/* ===== TOP PRODUCTS ===== */
+// ✅ GET TOP PRODUCTS (REVENUE & PROFIT)
+app.get('/top-products', authenticateToken, async (req, res) => {
+    try {
+        console.log('📊 Fetching top products from detail_transaksi...');
+        
+        const [details] = await db.execute(`
+            SELECT 
+                p.nama_produk,
+                SUM(d.quantity) AS total_qty,
+                SUM(d.subtotal) AS total_revenue,
+                ROUND(SUM(d.subtotal * 0.2), 0) AS total_profit
+            FROM detail_transaksi d
+            JOIN produk p ON d.produk_id = p.id
+            GROUP BY d.produk_id, p.nama_produk
+            ORDER BY total_qty DESC
+            LIMIT 9
+        `);
+        
+        console.log('📊 Details found:', details.length);
+        
+        if (details.length === 0) {
+            return res.json({
+                success: true,
+                topRevenue: [],
+                topProfit: []
+            });
+        }
+
+        const topRevenue = details.map(d => ({
+            nama_produk: d.nama_produk,
+            qty: Number(d.total_qty),
+            total: Number(d.total_revenue)
+        }));
+
+        const topProfit = details.map(d => ({
+            nama_produk: d.nama_produk,
+            qty: Number(d.total_qty),
+            profit: Number(d.total_profit)
+        })).sort((a, b) => b.profit - a.profit).slice(0, 9);
+
+        console.log('🏆 Top Revenue:', topRevenue);
+        console.log('📈 Top Profit (20%):', topProfit);
+
+        res.json({
+            success: true,
+            topRevenue: topRevenue,
+            topProfit: topProfit
+        });
+
+    } catch (err) {
+        console.error('❌ Error fetching top products:', err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+// ✅ RESET TOP PRODUCTS (HAPUS DETAIL TRANSAKSI)
+app.delete('/reset-top-products', authenticateToken, async (req, res) => {
+    try {
+        console.log('🔄 Resetting top products data...');
+        
+        // Hapus semua data di detail_transaksi
+        await db.execute('DELETE FROM detail_transaksi');
+        
+        // Reset auto increment
+        await db.execute('ALTER TABLE detail_transaksi AUTO_INCREMENT = 1');
+        
+        console.log('✅ Data top products berhasil direset');
+        
+        res.json({
+            success: true,
+            message: 'Data Top Revenue & Top Profit berhasil direset'
+        });
+    } catch (err) {
+        console.error('❌ Error resetting top products:', err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
 
 /* ===== DASHBOARD STATISTIK ===== */
 app.get('/dashboard', async (req, res) => {
@@ -356,7 +436,6 @@ app.put('/users/:id', async (req, res) => {
 
         console.log('📝 Update user:', { id, username, email, role });
 
-        // Cek apakah user ada
         const [user] = await db.execute('SELECT * FROM users WHERE id = ?', [id]);
         if (user.length === 0) {
             return res.status(404).json({
@@ -394,7 +473,6 @@ app.delete('/users/:id', async (req, res) => {
     try {
         const { id } = req.params;
         
-        // Cek apakah user ada
         const [user] = await db.execute('SELECT username FROM users WHERE id = ?', [id]);
         if (user.length === 0) {
             return res.status(404).json({
@@ -403,7 +481,6 @@ app.delete('/users/:id', async (req, res) => {
             });
         }
 
-        // Cek jangan hapus admin utama
         if (user[0]?.username === 'admin') {
             return res.status(400).json({
                 success: false,
@@ -422,6 +499,7 @@ app.delete('/users/:id', async (req, res) => {
         res.status(500).json({ success: false, error: err.message });
     }
 });
+
 /* ===== LAPORAN PDF ===== */
 app.get('/laporan', async (req, res) => {
     try {
@@ -454,5 +532,6 @@ app.listen(PORT, () => {
     console.log(`📦 Produk: http://localhost:3000/produk`);
     console.log(`🧾 Transaksi: http://localhost:3000/transaksi`);
     console.log(`📊 Dashboard: http://localhost:3000/dashboard`);
+    console.log(`📈 Top Products: http://localhost:3000/top-products`);
     console.log(`=========================================`);
 });
