@@ -155,12 +155,17 @@ const Dashboard = () => {
     }
   };
 
+  // Data Chart - 7 Bulan (Jan - Jul)
   const barData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul'],
     datasets: [
       {
         label: 'Pendapatan (Rp)',
-        data: [120000, 190000, 150000, 200000, 300000, stats.totalPendapatan || 0],
+        data: [
+          120000, 190000, 150000, 200000, 300000, 
+          stats.totalPendapatan || 0,
+          stats.totalPendapatan || 0  // Juli
+        ],
         backgroundColor: 'rgba(109, 76, 65, 0.6)',
         borderColor: '#6d4c41',
         borderWidth: 2,
@@ -177,11 +182,15 @@ const Dashboard = () => {
   };
 
   const lineData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul'],
     datasets: [
       {
         label: 'Jumlah Transaksi',
-        data: [5, 8, 6, 10, 15, stats.totalTransaksi || 0],
+        data: [
+          5, 8, 6, 10, 15, 
+          stats.totalTransaksi || 0,
+          stats.totalTransaksi || 0  // Juli
+        ],
         borderColor: '#6d4c41',
         backgroundColor: 'rgba(109, 76, 65, 0.2)',
         tension: 0.4,
@@ -370,6 +379,8 @@ const Dashboard = () => {
                   <span className="badge p-2" style={{ backgroundColor: '#6d4c41', color: '#fff' }}>✅ Kelola Produk</span>
                   <span className="badge p-2" style={{ backgroundColor: '#6d4c41', color: '#fff' }}>✅ Kelola Transaksi</span>
                   <span className="badge p-2" style={{ backgroundColor: '#6d4c41', color: '#fff' }}>✅ Cetak Laporan</span>
+                  <span className="badge p-2" style={{ backgroundColor: '#8d6e63', color: '#fff' }}>⏳ Manajemen Member</span>
+                  <span className="badge p-2" style={{ backgroundColor: '#8d6e63', color: '#fff' }}>⏳ Manajemen Promo</span>
                 </div>
               </Card>
             </Col>
